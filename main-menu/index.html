@@ -4,268 +4,50 @@
 <head>
 
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
 <title>MYMAR</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.min.js"></script>
-
-<style>
-
-*{
-
-margin:0;
-
-padding:0;
-
-box-sizing:border-box;
-
-font-family:'Rajdhani',sans-serif;
-
-}
-
-html,body{
-
-width:100%;
-
-height:100%;
-
-overflow:hidden;
-
-background:#000;
-
-}
-
-#game{
-
-position:absolute;
-
-left:0;
-
-top:0;
-
-width:100%;
-
-height:100%;
-
-}
-
-#background{
-
-position:absolute;
-
-left:0;
-
-top:0;
-
-width:100%;
-
-height:100%;
-
-background:
-
-linear-gradient(rgba(0,0,0,.25),rgba(0,0,0,.65)),
-
-url("../1000063767.png");
-
-background-size:cover;
-
-background-position:center;
-
-z-index:-1;
-
-}
-
-#leftMenu{
-
-position:absolute;
-
-left:50px;
-
-top:50%;
-
-transform:translateY(-50%);
-
-display:flex;
-
-flex-direction:column;
-
-gap:18px;
-
-}
-
-.menuButton{
-
-width:260px;
-
-height:58px;
-
-border-radius:10px;
-
-border:1px solid rgba(255,255,255,.15);
-
-background:rgba(20,20,20,.65);
-
-backdrop-filter:blur(8px);
-
-color:white;
-
-font-size:26px;
-
-cursor:pointer;
-
-transition:.25s;
-
-}
-
-.menuButton:hover{
-
-transform:translateX(15px);
-
-background:#ffffff;
-
-color:#000;
-
-}
-
-#logo{
-
-position:absolute;
-
-left:50px;
-
-top:35px;
-
-color:white;
-
-font-size:58px;
-
-font-weight:700;
-
-letter-spacing:10px;
-
-}
-
-#playerCard{
-
-position:absolute;
-
-right:40px;
-
-top:40px;
-
-width:260px;
-
-padding:18px;
-
-border-radius:15px;
-
-background:rgba(0,0,0,.45);
-
-color:white;
-
-}
-
-#playerCard h2{
-
-font-size:32px;
-
-}
-
-#playerCard p{
-
-opacity:.8;
-
-font-size:18px;
-
-margin-top:8px;
-
-}
-
-#version{
-
-position:absolute;
-
-right:25px;
-
-bottom:20px;
-
-color:#888;
-
-font-size:18px;
-
-}
-
-#characterArea{
-
-position:absolute;
-
-left:50%;
-
-top:55%;
-
-transform:translate(-50%,-50%);
-
-width:520px;
-
-height:720px;
-
-}
-
-canvas{
-
-display:block;
-
-}
-
-@media(max-width:900px){
-
-#leftMenu{
-
-left:20px;
-
-}
-
-.menuButton{
-
-width:210px;
-
-height:50px;
-
-font-size:22px;
-
-}
-
-#logo{
-
-font-size:40px;
-
-}
-
-#characterArea{
-
-width:340px;
-
-height:520px;
-
-}
-
-}
-
-</style>
 
 </head>
 
 <body>
 
-<div id="background"></div>
+<div id="loadingScreen">
+
+<div id="loadingLogo">
+
+MYMAR
+
+</div>
+
+<div id="loadingBar">
+
+<div id="loadingProgress"></div>
+
+</div>
+
+<div id="loadingText">
+
+Loading...
+
+</div>
+
+</div>
+
+<div id="backgroundBlur"></div>
+
+<div id="menuContainer">
+
+<header>
 
 <div id="logo">
 
@@ -273,46 +55,200 @@ MYMAR
 
 </div>
 
-<div id="leftMenu">
+<div id="playerProfile">
 
-<button class="menuButton">▶ OYNA</button>
+<div id="playerAvatar">
 
-<button class="menuButton">👤 PROFİL</button>
-
-<button class="menuButton">🎒 ENVANTER</button>
-
-<button class="menuButton">🛒 MARKET</button>
-
-<button class="menuButton">🏆 LİDERLİK</button>
-
-<button class="menuButton">⚙ AYARLAR</button>
-
-<button class="menuButton">🚪 ÇIKIŞ</button>
+👤
 
 </div>
 
-<div id="characterArea">
-
-<div id="game"></div>
-
-</div>
-
-<div id="playerCard">
+<div id="playerInfo">
 
 <h2>Misafir</h2>
 
 <p>Seviye 1</p>
 
-<p>XP : 0 / 100</p>
+</div>
 
 </div>
 
-<div id="version">
+</header>
 
-MYMAR v0.0.1 Alpha
+<nav id="mainButtons">
+
+<button id="playButton">
+
+OYNA
+
+</button>
+
+<button>
+
+PROFİL
+
+</button>
+
+<button>
+
+ENVANTER
+
+</button>
+
+<button>
+
+MARKET
+
+</button>
+
+<button>
+
+ARKADAŞLAR
+
+</button>
+
+<button>
+
+LİDERLİK TABLOSU
+
+</button>
+
+<button>
+
+AYARLAR
+
+</button>
+
+<button>
+
+ÇIKIŞ
+
+</button>
+
+</nav>
+
+<section id="characterSection">
+
+<div id="threeContainer">
 
 </div>
+
+</section>
+
+<footer>
+
+<div id="leftFooter">
+
+BLI ESPORTS
+
+</div>
+
+<div id="centerFooter">
+
+Tek kişi tarafından geliştirilmektedir.
+
+</div>
+
+<div id="rightFooter">
+
+v0.0.1 ALPHA
+
+</div>
+
+</footer>
+
+</div>
+
+<div id="settingsPanel">
+
+<div id="settingsHeader">
+
+<h1>
+
+AYARLAR
+
+</h1>
+
+<button id="closeSettings">
+
+X
+
+</button>
+
+</div>
+
+<div class="setting">
+
+<label>
+
+Ses
+
+</label>
+
+<input type="range" min="0" max="100" value="100">
+
+</div>
+
+<div class="setting">
+
+<label>
+
+Müzik
+
+</label>
+
+<input type="range" min="0" max="100" value="70">
+
+</div>
+
+<div class="setting">
+
+<label>
+
+Grafik
+
+</label>
+
+<select>
+
+<option>Düşük</option>
+
+<option selected>Orta</option>
+
+<option>Yüksek</option>
+
+<option>Ultra</option>
+
+</select>
+
+</div>
+
+<div class="setting">
+
+<label>
+
+FPS Limiti
+
+</label>
+
+<select>
+
+<option>30</option>
+
+<option selected>60</option>
+
+<option>120</option>
+
+<option>Sınırsız</option>
+
+</select>
+
+</div>
+
+</div>
+
+<script src="script.js"></script>
 
 </body>
 
-</html>
+                  </html>
