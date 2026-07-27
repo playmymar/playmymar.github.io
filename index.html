@@ -3,554 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hayalet Avcısı · 2D Korku Oyunu</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            background: #0a080c;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            touch-action: none;
-            padding: 12px;
-        }
-        #game-wrapper {
-            background: #141016;
-            border-radius: 40px 40px 28px 28px;
-            padding: 18px 18px 22px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.9), inset 0 0 0 1px #3d2a33;
-            max-width: 720px;
-            width: 100%;
-        }
-        canvas {
-            display: block;
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            background: #0f0b0e;
-            border-radius: 28px;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.8), 0 0 30px #2f1520;
-            touch-action: none;
-            cursor: none;
-        }
-        #ui-panel {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 16px;
-            padding: 8px 12px;
-            background: #1d161c;
-            border-radius: 60px;
-            border: 1px solid #3d2a33;
-            color: #dac2c8;
-            font-weight: 600;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        #score, #health {
-            background: #0f0a0e;
-            padding: 6px 18px;
-            border-radius: 40px;
-            font-size: 0.9rem;
-            letter-spacing: 0.5px;
-            border: 1px solid #503a42;
-            box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
-        }
-        #health { color: #e07a7a; }
-        #score { color: #b8d0d0; }
-        #restart-btn {
-            background: #2e1d24;
-            border: 1px solid #6a4a55;
-            color: #f0d5d5;
-            padding: 6px 20px;
-            border-radius: 40px;
-            font-weight: 700;
-            font-size: 0.8rem;
-            transition: 0.15s;
-            touch-action: manipulation;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        #restart-btn:active { transform: scale(0.92); background: #402a32; }
-        #info-text {
-            color: #6b515a;
-            text-align: center;
-            font-size: 0.65rem;
-            margin-top: 12px;
-            letter-spacing: 0.8px;
-            opacity: 0.8;
-        }
-        @media (max-width: 500px) {
-            #game-wrapper { padding: 10px; border-radius: 28px; }
-            #score, #health { font-size: 0.7rem; padding: 4px 12px; }
-            #restart-btn { font-size: 0.7rem; padding: 4px 14px; }
-        }
-    </style>
+    <title>MYMAR - Macera Oyunu</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div id="game-wrapper">
-    <canvas id="gameCanvas" width="720" height="405"></canvas>
-    <div id="ui-panel">
-        <span id="score">💀 0</span>
-        <span id="health">❤️ 3</span>
-        <button id="restart-btn">⟳ YENİDEN</button>
+    <!-- Ana Menü -->
+    <div id="mainMenu" class="menu-container active">
+        <div class="menu-content">
+            <div class="logo-container">
+                <h1 class="game-title">MYMAR</h1>
+                <div class="title-decoration"></div>
+            </div>
+            <div class="menu-buttons">
+                <button id="startGameBtn" class="menu-btn primary">Oyunu Başlat</button>
+                <button id="settingsBtn" class="menu-btn">Ayarlar</button>
+                <button id="howToPlayBtn" class="menu-btn">Nasıl Oynanır</button>
+            </div>
+            <div class="menu-footer">
+                <span>v1.0</span>
+            </div>
+        </div>
     </div>
-    <div id="info-text">▼ fare / parmak ile hareket · hayaletlerden kaç · ruhları topla</div>
-</div>
-<script>
-    (function(){
-        // ---- SES EFECKTLERİ (Web Audio ile sentetik) ----
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        let audioCtx = null;
 
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new AudioCtx();
-            }
-        }
+    <!-- Ayarlar Menüsü -->
+    <div id="settingsMenu" class="menu-container">
+        <div class="menu-content">
+            <h2 class="menu-title">Ayarlar</h2>
+            <div class="settings-group">
+                <div class="setting-item">
+                    <label>Ses Efektleri</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Müzik</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="musicToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Zorluk Seviyesi</label>
+                    <select id="difficultySelect">
+                        <option value="easy">Kolay</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="hard">Zor</option>
+                    </select>
+                </div>
+            </div>
+            <button id="settingsBackBtn" class="menu-btn secondary">Geri Dön</button>
+        </div>
+    </div>
 
-        // Kısa ses efektleri
-        function playTone(freq, duration, type = 'sine', volume = 0.15) {
-            try {
-                initAudio();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.value = freq;
-                gain.gain.value = volume;
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch(e) { /* sessiz hata */ }
-        }
+    <!-- Nasıl Oynanır Menüsü -->
+    <div id="howToPlayMenu" class="menu-container">
+        <div class="menu-content">
+            <h2 class="menu-title">Nasıl Oynanır</h2>
+            <div class="how-to-play-content">
+                <div class="control-item">
+                    <span class="key">W / ↑</span>
+                    <span>Zıplamak</span>
+                </div>
+                <div class="control-item">
+                    <span class="key">A / ←</span>
+                    <span>Sola Hareket</span>
+                </div>
+                <div class="control-item">
+                    <span class="key">D / →</span>
+                    <span>Sağa Hareket</span>
+                </div>
+                <div class="control-item">
+                    <span class="key">Space</span>
+                    <span>Etkileşim / Toplama</span>
+                </div>
+                <div class="control-item">
+                    <span class="key">ESC</span>
+                    <span>Oyunu Durdur</span>
+                </div>
+                <div class="game-rules">
+                    <h3>Oyun Kuralları</h3>
+                    <ul>
+                        <li>Tüm altınları topla ve hedefe ulaş</li>
+                        <li>Engellerden kaçın</li>
+                        <li>Her bölümde yeni zorluklar seni bekliyor</li>
+                        <li>En yüksek puanı elde etmeye çalış</li>
+                    </ul>
+                </div>
+            </div>
+            <button id="howToPlayBackBtn" class="menu-btn secondary">Geri Dön</button>
+        </div>
+    </div>
 
-        function soundCollect() { playTone(880, 0.12, 'sine', 0.12); setTimeout(() => playTone(1100, 0.1, 'sine', 0.08), 80); }
-        function soundHit() { playTone(200, 0.25, 'sawtooth', 0.18); playTone(120, 0.3, 'square', 0.10); }
-        function soundGameOver() { playTone(300, 0.3, 'sawtooth', 0.15); setTimeout(() => playTone(200, 0.3, 'sawtooth', 0.15), 250); }
-        function soundStep() { playTone(120, 0.05, 'sine', 0.04); }
+    <!-- Oyun Ekranı -->
+    <div id="gameScreen" class="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Oyun İçi HUD -->
+        <div id="gameHUD" class="hud-container">
+            <div class="hud-left">
+                <div class="hud-item">
+                    <span class="hud-icon">❤️</span>
+                    <span id="healthDisplay">100</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-icon">⭐</span>
+                    <span id="scoreDisplay">0</span>
+                </div>
+            </div>
+            <div class="hud-center">
+                <div class="hud-item">
+                    <span id="levelDisplay">Bölüm 1</span>
+                </div>
+                <div class="hud-item">
+                    <span id="objectiveDisplay">Altınları Topla: 0/5</span>
+                </div>
+            </div>
+            <div class="hud-right">
+                <button id="pauseBtn" class="hud-btn">⏸️</button>
+            </div>
+        </div>
 
-        // ---- OYUN DEĞİŞKENLERİ ----
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreSpan = document.getElementById('score');
-        const healthSpan = document.getElementById('health');
+        <!-- Duraklatma Menüsü -->
+        <div id="pauseMenu" class="pause-overlay">
+            <div class="pause-content">
+                <h2>Oyun Durduruldu</h2>
+                <button id="resumeBtn" class="menu-btn primary">Devam Et</button>
+                <button id="pauseRestartBtn" class="menu-btn">Yeniden Başlat</button>
+                <button id="pauseMainMenuBtn" class="menu-btn secondary">Ana Menü</button>
+            </div>
+        </div>
 
-        // Oyun durumu
-        let game = {
-            score: 0,
-            health: 3,
-            isOver: false,
-            win: false
-        };
+        <!-- Bölüm Tamamlama -->
+        <div id="levelComplete" class="level-complete-overlay">
+            <div class="level-complete-content">
+                <h2>🎉 Bölüm Tamamlandı!</h2>
+                <div class="level-stats">
+                    <p>Puan: <span id="finalScore">0</span></p>
+                    <p>Toplanan Altın: <span id="finalGold">0</span></p>
+                    <p>Süre: <span id="finalTime">0</span>s</p>
+                </div>
+                <button id="nextLevelBtn" class="menu-btn primary">Sonraki Bölüm</button>
+                <button id="levelCompleteMenuBtn" class="menu-btn secondary">Ana Menü</button>
+            </div>
+        </div>
 
-        // Oyuncu (fare/parmak ile hareket eder)
-        const player = {
-            x: 360, y: 200,
-            radius: 16,
-            targetX: 360, targetY: 200
-        };
+        <!-- Oyun Bitti -->
+        <div id="gameOver" class="game-over-overlay">
+            <div class="game-over-content">
+                <h2>💀 Oyun Bitti</h2>
+                <div class="level-stats">
+                    <p>Puan: <span id="gameOverScore">0</span></p>
+                    <p>Bölüm: <span id="gameOverLevel">1</span></p>
+                </div>
+                <button id="gameOverRestartBtn" class="menu-btn primary">Yeniden Dene</button>
+                <button id="gameOverMenuBtn" class="menu-btn secondary">Ana Menü</button>
+            </div>
+        </div>
+    </div>
 
-        // Düşmanlar (hayaletler)
-        let enemies = [];
-        const ENEMY_COUNT = 5;
-        // Toplanabilir nesneler (ruhlar)
-        let collectibles = [];
-        const COLLECT_COUNT = 8;
-
-        // Animasyon çerçevesi
-        let frame = 0;
-        let animId = null;
-
-        // ---- OYUN BAŞLAT / SIFIRLA ----
-        function resetGame() {
-            game.score = 0;
-            game.health = 3;
-            game.isOver = false;
-            game.win = false;
-            player.x = 360; player.y = 200;
-            player.targetX = 360; player.targetY = 200;
-            enemies = [];
-            collectibles = [];
-            spawnEnemies();
-            spawnCollectibles();
-            updateUI();
-            if (animId === null) {
-                gameLoop();
-            }
-        }
-
-        // ---- DÜŞMAN VE RUHLAR ----
-        function spawnEnemies() {
-            enemies = [];
-            for (let i=0; i<ENEMY_COUNT; i++) {
-                let x, y, overlap;
-                let attempts = 0;
-                do {
-                    x = 50 + Math.random() * 620;
-                    y = 40 + Math.random() * 320;
-                    overlap = false;
-                    for (let e of enemies) {
-                        if (Math.hypot(x - e.x, y - e.y) < 70) { overlap = true; break; }
-                    }
-                    if (Math.hypot(x - player.x, y - player.y) < 80) overlap = true;
-                    attempts++;
-                } while (overlap && attempts < 30);
-                enemies.push({
-                    x, y,
-                    radius: 18 + Math.random() * 8,
-                    speedX: (Math.random() - 0.5) * 1.6,
-                    speedY: (Math.random() - 0.5) * 1.6,
-                    phase: Math.random() * 100,
-                    wobble: 0.02 + Math.random() * 0.03
-                });
-            }
-        }
-
-        function spawnCollectibles() {
-            collectibles = [];
-            for (let i=0; i<COLLECT_COUNT; i++) {
-                let x, y, overlap;
-                let attempts = 0;
-                do {
-                    x = 40 + Math.random() * 640;
-                    y = 30 + Math.random() * 340;
-                    overlap = false;
-                    for (let c of collectibles) {
-                        if (Math.hypot(x - c.x, y - c.y) < 50) { overlap = true; break; }
-                    }
-                    for (let e of enemies) {
-                        if (Math.hypot(x - e.x, y - e.y) < 60) { overlap = true; break; }
-                    }
-                    if (Math.hypot(x - player.x, y - player.y) < 70) overlap = true;
-                    attempts++;
-                } while (overlap && attempts < 25);
-                collectibles.push({
-                    x, y,
-                    radius: 12,
-                    glow: 0,
-                    collected: false
-                });
-            }
-        }
-
-        // ---- OYUN GÜNCELLEME ----
-        function update() {
-            if (game.isOver) return;
-
-            // Oyuncu yumuşak takip (dokunma / fare)
-            player.x += (player.targetX - player.x) * 0.18;
-            player.y += (player.targetY - player.y) * 0.18;
-            // Sınırlar
-            player.x = Math.max(20, Math.min(700, player.x));
-            player.y = Math.max(20, Math.min(385, player.y));
-
-            // Hayalet hareketi (düşman)
-            for (let e of enemies) {
-                // yön değişimi
-                e.x += e.speedX;
-                e.y += e.speedY;
-                if (e.x < 20 || e.x > 700) e.speedX *= -1;
-                if (e.y < 20 || e.y > 385) e.speedY *= -1;
-                // hafif dalgalanma
-                e.x += Math.sin(frame * e.wobble + e.phase) * 0.25;
-                e.y += Math.cos(frame * e.wobble * 0.7 + e.phase) * 0.25;
-                // sınırlama
-                e.x = Math.max(18, Math.min(702, e.x));
-                e.y = Math.max(18, Math.min(387, e.y));
-            }
-
-            // Çarpışma: oyuncu - hayalet
-            for (let e of enemies) {
-                const dist = Math.hypot(player.x - e.x, player.y - e.y);
-                if (dist < player.radius + e.radius - 4) {
-                    // hasar
-                    if (game.health > 0) {
-                        game.health--;
-                        soundHit();
-                        updateUI();
-                        // hayaleti geri it
-                        const angle = Math.atan2(e.y - player.y, e.x - player.x);
-                        e.x += Math.cos(angle) * 30;
-                        e.y += Math.sin(angle) * 30;
-                        // kısa süreli koruma (titreme)
-                        if (game.health <= 0) {
-                            gameOver();
-                            return;
-                        }
-                    }
-                }
-            }
-
-            // Ruh toplama
-            for (let c of collectibles) {
-                if (c.collected) continue;
-                const dist = Math.hypot(player.x - c.x, player.y - c.y);
-                if (dist < player.radius + c.radius + 4) {
-                    c.collected = true;
-                    game.score++;
-                    soundCollect();
-                    updateUI();
-                    // tüm ruhlar toplandı mı?
-                    if (game.score >= COLLECT_COUNT) {
-                        game.win = true;
-                        game.isOver = true;
-                        soundGameOver();
-                        updateUI();
-                        // kazanma mesajı
-                        setTimeout(() => {
-                            alert('🎉 Tüm ruhları topladın! Hayaletleri yendin! 🎉');
-                        }, 200);
-                    }
-                }
-            }
-
-            // Hayaletler ruhları yok etmesin (korku oyunu olsun)
-            // ama ruhlar hayaletlere çarparsa küçük efekt
-            for (let e of enemies) {
-                for (let c of collectibles) {
-                    if (c.collected) continue;
-                    const d = Math.hypot(e.x - c.x, e.y - c.y);
-                    if (d < e.radius + c.radius + 4) {
-                        // ruhu hafif it
-                        const ang = Math.atan2(c.y - e.y, c.x - e.x);
-                        c.x += Math.cos(ang) * 2;
-                        c.y += Math.sin(ang) * 2;
-                    }
-                }
-            }
-
-            // Rastgele adım sesi (atmosfer)
-            if (Math.random() < 0.008) soundStep();
-
-            frame++;
-        }
-
-        // ---- ÇİZİM (gelişmiş animasyonlu) ----
-        function draw() {
-            ctx.clearRect(0, 0, 720, 405);
-
-            // Arkaplan (karanlık)
-            const grad = ctx.createRadialGradient(360, 200, 60, 360, 200, 400);
-            grad.addColorStop(0, '#1d141a');
-            grad.addColorStop(0.6, '#0f0b0e');
-            grad.addColorStop(1, '#030103');
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, 720, 405);
-
-            // Duvarlar / sis
-            for (let i=0; i<10; i++) {
-                ctx.fillStyle = `rgba(40, 20, 30, ${0.02 + Math.sin(frame*0.01 + i)*0.01})`;
-                ctx.fillRect(i*80, 0, 40, 405);
-            }
-
-            // ---- Ruhlar (toplanabilir) ----
-            for (let c of collectibles) {
-                if (c.collected) continue;
-                const glow = 0.6 + 0.4 * Math.sin(frame * 0.06 + c.x);
-                ctx.shadowColor = `rgba(180, 220, 255, ${glow * 0.6})`;
-                ctx.shadowBlur = 30;
-                ctx.beginPath();
-                ctx.arc(c.x, c.y, c.radius + 2, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(160, 230, 255, ${0.5 + glow * 0.3})`;
-                ctx.fill();
-                ctx.shadowBlur = 15;
-                ctx.beginPath();
-                ctx.arc(c.x-2, c.y-3, c.radius-2, 0, Math.PI*2);
-                ctx.fillStyle = `rgba(220, 250, 255, 0.7)`;
-                ctx.fill();
-                // parlak çekirdek
-                ctx.shadowBlur = 30;
-                ctx.beginPath();
-                ctx.arc(c.x+2, c.y-2, 4, 0, Math.PI*2);
-                ctx.fillStyle = `rgba(255, 255, 255, 0.8)`;
-                ctx.fill();
-            }
-
-            // ---- Hayaletler (düşman) ----
-            for (let e of enemies) {
-                const pulse = 1 + 0.08 * Math.sin(frame * 0.05 + e.phase);
-                ctx.shadowColor = 'rgba(80, 180, 200, 0.4)';
-                ctx.shadowBlur = 35;
-                // gövde
-                ctx.beginPath();
-                ctx.ellipse(e.x, e.y, e.radius * pulse, e.radius * pulse * 0.9, 0, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(60, 130, 150, ${0.25 + 0.1 * Math.sin(frame*0.04 + e.phase)})`;
-                ctx.fill();
-                ctx.shadowBlur = 20;
-                // gözler
-                ctx.fillStyle = 'rgba(220, 240, 255, 0.7)';
-                ctx.shadowBlur = 20;
-                ctx.beginPath();
-                ctx.arc(e.x - 7, e.y - 4, 5, 0, Math.PI*2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(e.x + 7, e.y - 4, 5, 0, Math.PI*2);
-                ctx.fill();
-                // göz bebekleri (takip)
-                const dx = player.x - e.x;
-                const dy = player.y - e.y;
-                const ang = Math.atan2(dy, dx);
-                ctx.fillStyle = '#0a0c12';
-                ctx.shadowBlur = 8;
-                ctx.beginPath();
-                ctx.arc(e.x - 7 + Math.cos(ang)*3, e.y - 4 + Math.sin(ang)*3, 2.5, 0, Math.PI*2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(e.x + 7 + Math.cos(ang)*3, e.y - 4 + Math.sin(ang)*3, 2.5, 0, Math.PI*2);
-                ctx.fill();
-                // ağız (korku)
-                ctx.strokeStyle = 'rgba(20, 30, 40, 0.4)';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(e.x, e.y + 6, 6, 0.1, Math.PI - 0.1);
-                ctx.stroke();
-            }
-
-            // ---- Oyuncu (karakter) ----
-            ctx.shadowBlur = 30;
-            ctx.shadowColor = 'rgba(200, 180, 160, 0.3)';
-            // gövde
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.radius, 0, Math.PI*2);
-            ctx.fillStyle = '#3d2a33';
-            ctx.fill();
-            ctx.shadowBlur = 15;
-            ctx.beginPath();
-            ctx.arc(player.x-2, player.y-3, player.radius-3, 0, Math.PI*2);
-            ctx.fillStyle = '#5c404b';
-            ctx.fill();
-            // gözler (beyaz)
-            ctx.fillStyle = '#f0e8e0';
-            ctx.shadowBlur = 10;
-            ctx.beginPath();
-            ctx.arc(player.x-6, player.y-4, 4, 0, Math.PI*2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(player.x+6, player.y-4, 4, 0, Math.PI*2);
-            ctx.fill();
-            // göz bebekleri (hareketli)
-            ctx.fillStyle = '#1a1215';
-            ctx.beginPath();
-            ctx.arc(player.x-6 + (player.targetX - player.x)*0.04, player.y-4 + (player.targetY - player.y)*0.04, 2, 0, Math.PI*2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(player.x+6 + (player.targetX - player.x)*0.04, player.y-4 + (player.targetY - player.y)*0.04, 2, 0, Math.PI*2);
-            ctx.fill();
-
-            // ---- Oyun bitti / kazandı mesajı ----
-            if (game.isOver) {
-                ctx.shadowBlur = 50;
-                ctx.shadowColor = 'black';
-                ctx.font = 'bold 32px "Segoe UI", sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillStyle = game.win ? '#b8e0b0' : '#e07070';
-                ctx.fillText(game.win ? '✧ KAZANDIN ✧' : '☠ ÖLDÜN ☠', 360, 160);
-                ctx.font = '18px sans-serif';
-                ctx.fillStyle = '#d0b0b0';
-                ctx.fillText('yeniden başlatmak için butona tıkla', 360, 220);
-            }
-
-            // UI bilgileri
-            ctx.shadowBlur = 0;
-            ctx.font = '14px monospace';
-            ctx.fillStyle = '#5a4a50';
-            ctx.fillText('hayaletlerden kaç!', 20, 30);
-        }
-
-        // ---- OYUN DÖNGÜSÜ ----
-        function gameLoop() {
-            if (!game.isOver) {
-                update();
-            }
-            draw();
-            animId = requestAnimationFrame(gameLoop);
-        }
-
-        // ---- UI GÜNCELLEME ----
-        function updateUI() {
-            scoreSpan.textContent = '💀 ' + game.score + '/' + COLLECT_COUNT;
-            healthSpan.textContent = '❤️ ' + game.health;
-            if (game.health <= 0) healthSpan.style.color = '#ff5555';
-            else healthSpan.style.color = '#e07a7a';
-        }
-
-        // ---- OYUN BİTTİ ----
-        function gameOver() {
-            game.isOver = true;
-            soundGameOver();
-            updateUI();
-            setTimeout(() => {
-                alert('💀 Hayaletler seni yakaladı! Tekrar dene.');
-            }, 200);
-        }
-
-        // ---- OLAY DİNLEYİCİLER (fare / dokunma) ----
-        function handleMove(e) {
-            if (game.isOver) return;
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            let clientX, clientY;
-            if (e.touches) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-                e.preventDefault();
-            } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
-            }
-            let canvasX = (clientX - rect.left) * scaleX;
-            let canvasY = (clientY - rect.top) * scaleY;
-            canvasX = Math.max(0, Math.min(720, canvasX));
-            canvasY = Math.max(0, Math.min(405, canvasY));
-            player.targetX = canvasX;
-            player.targetY = canvasY;
-        }
-
-        function attachEvents() {
-            canvas.addEventListener('mousemove', handleMove);
-            canvas.addEventListener('touchmove', handleMove, { passive: false });
-            canvas.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                handleMove(e);
-            }, { passive: false });
-            // dokunmatik cihazlarda kaydırmayı engelle
-            canvas.addEventListener('touchcancel', (e) => e.preventDefault(), { passive: false });
-        }
-
-        // ---- YENİDEN BAŞLAT ----
-        document.getElementById('restart-btn').addEventListener('click', () => {
-            resetGame();
-        });
-        document.getElementById('restart-btn').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            resetGame();
-        }, { passive: false });
-
-        // ---- BAŞLAT ----
-        function init() {
-            resetGame();
-            attachEvents();
-            // ses context'i ilk tıklamada aktive et
-            document.addEventListener('click', () => initAudio(), { once: true });
-            document.addEventListener('touchstart', () => initAudio(), { once: true });
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
-    })();
-</script>
+    <script src="script.js"></script>
 </body>
-    </html>
+</html>
