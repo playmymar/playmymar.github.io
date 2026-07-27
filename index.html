@@ -2,1998 +2,529 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MYMAR - 3D FPS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Karanlık Koridor · Korku Oyunu</title>
     <style>
-        /* ============================================================
-           TÜM STILLER TEK BLOKTA
-           ============================================================ */
-        *{margin:0;padding:0;box-sizing:border-box;user-select:none}
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap');
-        :root{--primary:#ff6b6b;--secondary:#4d96ff;--accent:#ffd93d;--bg-dark:#0a0a0f;--text-primary:#fff;--text-secondary:rgba(255,255,255,0.6)}
-        body{font-family:'Rajdhani','Segoe UI',sans-serif;background:var(--bg-dark);overflow:hidden;height:100vh;width:100vw;cursor:none;color:var(--text-primary)}
-        ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:rgba(255,255,255,0.05)}::-webkit-scrollbar-thumb{background:var(--primary);border-radius:2px}
-        
-        /* MENÜLER */
-        .menu-container{position:fixed;top:0;left:0;width:100%;height:100%;display:none;justify-content:center;align-items:center;z-index:1000;background:var(--bg-dark);overflow-y:auto;padding:20px}
-        .menu-container.active{display:flex}
-        .menu-bg-animation{position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 20% 50%,rgba(255,70,70,0.1) 0%,transparent 60%),radial-gradient(ellipse at 80% 50%,rgba(70,70,255,0.1) 0%,transparent 60%),radial-gradient(ellipse at 50% 100%,rgba(255,200,70,0.05) 0%,transparent 50%);animation:menuBgPulse 4s ease-in-out infinite}
-        @keyframes menuBgPulse{0%,100%{opacity:0.5}50%{opacity:1}}
-        .menu-content{position:relative;background:rgba(10,10,20,0.9);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:40px;max-width:900px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,0.8);z-index:1}
-        .menu-header{display:flex;align-items:center;gap:15px;margin-bottom:25px}
-        .back-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:#fff;padding:8px 16px;border-radius:10px;cursor:pointer;font-size:18px;transition:all 0.3s ease;font-family:'Rajdhani',sans-serif}
-        .back-btn:hover{background:rgba(255,255,255,0.15);transform:scale(1.05)}
-        .menu-title{font-size:28px;font-weight:700;color:#fff;flex:1;font-family:'Orbitron',monospace}
-        
-        /* ANA MENÜ */
-        .main-menu-content{max-width:600px}
-        .logo-section{text-align:center;margin-bottom:40px}
-        .game-logo{display:flex;justify-content:center;align-items:center;gap:5px;font-size:72px;font-weight:900;font-family:'Orbitron',monospace}
-        .logo-m{color:var(--primary);animation:logoPulse 2s ease-in-out infinite}
-        .logo-text{background:linear-gradient(135deg,#ff6b6b,#ffd93d,#6bcb77,#4d96ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:titleGlow 3s ease-in-out infinite}
-        @keyframes logoPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-        @keyframes titleGlow{0%,100%{filter:drop-shadow(0 0 20px rgba(255,107,107,0.3))}50%{filter:drop-shadow(0 0 40px rgba(255,107,107,0.6))}}
-        .game-tagline{font-size:14px;color:var(--text-secondary);letter-spacing:4px;margin-top:5px}
-        .version-info{font-size:12px;color:rgba(255,255,255,0.2);margin-top:5px}
-        .menu-sections{display:flex;flex-direction:column;gap:10px}
-        .menu-section{display:flex;flex-direction:column;gap:8px}
-        .menu-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);margin:10px 0}
-        .menu-footer{display:flex;justify-content:space-between;margin-top:25px;padding-top:15px;border-top:1px solid rgba(255,255,255,0.08);font-size:13px;color:var(--text-secondary)}
-        
-        /* BUTONLAR */
-        .menu-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px 24px;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);color:#fff;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);font-family:'Rajdhani',sans-serif;text-transform:uppercase;letter-spacing:0.5px}
-        .menu-btn .btn-icon{font-size:18px}
-        .menu-btn:hover{transform:translateY(-2px) scale(1.02);background:rgba(255,255,255,0.12);box-shadow:0 10px 30px rgba(0,0,0,0.3)}
-        .menu-btn:active{transform:translateY(0px) scale(0.98)}
-        .menu-btn.primary{background:linear-gradient(135deg,#ff6b6b,#ee5a24);border-color:transparent;box-shadow:0 5px 20px rgba(238,90,36,0.3)}
-        .menu-btn.primary:hover{background:linear-gradient(135deg,#ff8787,#ff6b6b);box-shadow:0 10px 40px rgba(238,90,36,0.5)}
-        .menu-btn.secondary{background:rgba(255,255,255,0.03)}
-        .menu-btn.secondary:hover{background:rgba(255,255,255,0.1)}
-        
-        /* AYARLAR */
-        .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:25px;margin:20px 0}
-        .settings-category{background:rgba(255,255,255,0.03);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.08)}
-        .settings-category h3{font-size:14px;color:var(--text-secondary);margin-bottom:15px;letter-spacing:1px}
-        .setting-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);gap:10px}
-        .setting-item label{font-size:14px;font-weight:600;flex:1}
-        .setting-item input[type="range"]{width:100px;height:4px;-webkit-appearance:none;appearance:none;background:rgba(255,255,255,0.2);border-radius:2px;outline:none}
-        .setting-item input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:var(--primary);cursor:pointer}
-        .toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0}
-        .toggle-switch input{opacity:0;width:0;height:0}
-        .toggle-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.15);border-radius:24px;transition:0.3s ease}
-        .toggle-slider::before{content:"";position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:0.3s ease}
-        .toggle-switch input:checked + .toggle-slider{background:var(--primary)}
-        .toggle-switch input:checked + .toggle-slider::before{transform:translateX(20px)}
-        .crosshair-selector{display:flex;gap:5px}
-        .crosshair-option{width:32px;height:32px;border-radius:8px;border:2px solid rgba(255,255,255,0.1);background:transparent;color:#fff;font-size:18px;cursor:pointer;transition:all 0.3s ease;font-family:monospace}
-        .crosshair-option:hover{border-color:rgba(255,255,255,0.3)}
-        .crosshair-option.active{border-color:var(--primary);background:rgba(255,107,107,0.2)}
-        .setting-item select{padding:6px 12px;border-radius:8px;background:rgba(255,255,255,0.05);color:#fff;border:1px solid rgba(255,255,255,0.08);font-family:'Rajdhani',sans-serif;font-size:14px;cursor:pointer}
-        
-        /* NASIL OYNANIR */
-        .how-to-play-content{max-width:800px}
-        .htp-grid{display:grid;grid-template-columns:1fr 1fr;gap:25px;margin:20px 0}
-        .htp-section{background:rgba(255,255,255,0.03);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.08)}
-        .htp-section h3{font-size:16px;margin-bottom:15px;color:var(--primary);letter-spacing:1px}
-        .control-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-        .control-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:6px;font-size:13px}
-        .control-item .key{background:rgba(255,255,255,0.08);padding:2px 10px;border-radius:4px;font-family:'Orbitron',monospace;font-size:11px;color:var(--accent);border:1px solid rgba(255,255,255,0.05)}
-        .mode-list{display:flex;flex-direction:column;gap:10px}
-        .mode-item{display:flex;gap:12px;padding:10px;background:rgba(255,255,255,0.03);border-radius:8px}
-        .mode-icon{font-size:24px}
-        .mode-item strong{display:block;font-size:14px}
-        .mode-item p{font-size:12px;color:var(--text-secondary);margin:0}
-        .tip-list{list-style:none;padding:0}
-        .tip-list li{padding:6px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.05)}
-        
-        /* MAĞAZA */
-        .shop-content{max-width:800px}
-        .currency-display{font-size:18px;font-weight:700;color:var(--accent);background:rgba(255,215,0,0.1);padding:6px 16px;border-radius:10px;border:1px solid rgba(255,215,0,0.2)}
-        .shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:25px;margin:20px 0}
-        .shop-category{background:rgba(255,255,255,0.03);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.08)}
-        .shop-category h3{font-size:16px;margin-bottom:15px;color:var(--text-secondary)}
-        .shop-items{display:flex;flex-direction:column;gap:10px}
-        .shop-item{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.08);transition:all 0.3s ease}
-        .shop-item:hover{border-color:rgba(255,255,255,0.15)}
-        .shop-item.owned{border-color:rgba(107,203,119,0.3)}
-        .item-preview{font-size:32px;width:50px;text-align:center}
-        .item-info{flex:1}
-        .item-info h4{font-size:14px;margin:0}
-        .item-info p{font-size:12px;color:var(--text-secondary);margin:2px 0 0 0}
-        .shop-btn{padding:6px 16px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.3s ease;font-family:'Rajdhani',sans-serif}
-        .buy-btn{background:var(--primary);color:#fff}
-        .buy-btn:hover{transform:scale(1.05);box-shadow:0 5px 20px rgba(255,107,107,0.3)}
-        .owned-btn{background:rgba(107,203,119,0.2);color:#6bcb77}
-        
-        /* EKİPMAN */
-        .loadout-content{max-width:700px}
-        .loadout-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:20px 0}
-        .loadout-slot{background:rgba(255,255,255,0.03);padding:15px;border-radius:12px;border:1px solid rgba(255,255,255,0.08)}
-        .loadout-slot h3{font-size:12px;color:var(--text-secondary);margin-bottom:10px;letter-spacing:1px}
-        .weapon-slot{display:flex;flex-direction:column;align-items:center;padding:15px;background:rgba(255,255,255,0.03);border-radius:10px;cursor:pointer;transition:all 0.3s ease;border:2px solid transparent}
-        .weapon-slot:hover{border-color:rgba(255,255,255,0.1)}
-        .weapon-icon{font-size:36px}
-        .weapon-name{font-size:14px;font-weight:700;margin:5px 0}
-        .weapon-stats{font-size:11px;color:var(--text-secondary)}
-        .loadout-presets{margin:20px 0}
-        .loadout-presets h3{font-size:14px;color:var(--text-secondary);margin-bottom:10px}
-        .preset-buttons{display:flex;gap:8px;flex-wrap:wrap}
-        .preset-btn{padding:8px 16px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;background:rgba(255,255,255,0.03);color:#fff;cursor:pointer;transition:all 0.3s ease;font-family:'Rajdhani',sans-serif;font-size:13px}
-        .preset-btn:hover{border-color:rgba(255,255,255,0.2)}
-        .preset-btn.active{border-color:var(--primary);background:rgba(255,107,107,0.1)}
-        
-        /* İSTATİSTİKLER */
-        .stats-content{max-width:800px}
-        .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:20px 0}
-        .stat-card{background:rgba(255,255,255,0.03);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);text-align:center}
-        .stat-icon{font-size:28px;margin-bottom:5px}
-        .stat-value{font-size:28px;font-weight:900;font-family:'Orbitron',monospace;background:linear-gradient(135deg,#ff6b6b,#ffd93d);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        .stat-label{font-size:12px;color:var(--text-secondary);margin-top:5px}
-        .stats-chart{background:rgba(255,255,255,0.03);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);margin-top:20px}
-        .stats-chart h3{font-size:14px;color:var(--text-secondary);margin-bottom:15px}
-        .chart-bars{display:flex;justify-content:space-around;align-items:flex-end;height:120px;gap:8px}
-        .chart-bar{flex:1;max-width:30px;background:linear-gradient(180deg,var(--primary),var(--secondary));border-radius:4px 4px 0 0;min-height:10px;transition:height 0.5s ease}
-        
-        /* OYUN EKRANI */
-        .game-container{position:fixed;top:0;left:0;width:100%;height:100%;display:none;background:var(--bg-dark)}
-        .game-container.active{display:block}
-        #gameCanvas{width:100%;height:100%;display:block}
-        
-        /* CROSSHAIR */
-        .crosshair{position:fixed;pointer-events:none;z-index:50;color:rgba(255,255,255,0.9);font-size:30px;transform:translate(-50%,-50%);left:50%;top:50%;text-shadow:0 0 10px rgba(0,0,0,0.5),0 0 20px rgba(0,0,0,0.3);transition:all 0.1s ease;font-family:monospace}
-        .crosshair.dot{font-size:12px}
-        .crosshair.circle{font-size:24px}
-        .crosshair.target{font-size:28px}
-        
-        /* HUD */
-        .hud-container{position:fixed;top:0;left:0;right:0;padding:15px 20px;pointer-events:none;z-index:100}
-        .hud-top{display:flex;justify-content:space-between;align-items:center}
-        .hud-left,.hud-right{display:flex;gap:12px;align-items:center}
-        .hud-center{position:absolute;left:50%;transform:translateX(-50%)}
-        .hud-item{background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);padding:6px 14px;border-radius:10px;color:#fff;font-size:14px;font-weight:700;border:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;pointer-events:auto;font-family:'Rajdhani',sans-serif}
-        .hud-icon{font-size:16px}
-        .health-container{padding:4px 12px;gap:10px}
-        .health-bar-bg{width:80px;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden}
-        .health-bar-fill{height:100%;background:linear-gradient(90deg,#ff6b6b,#ffd93d);border-radius:3px;transition:width 0.3s ease}
-        .ammo-container{font-family:'Orbitron',monospace;font-size:16px}
-        .hud-bottom{position:fixed;bottom:20px;left:20px;right:20px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
-        .weapon-info{font-size:14px;gap:12px}
-        .weapon-damage{color:var(--primary)}
-        .minimap-container{padding:5px;border-radius:12px;overflow:hidden}
-        #minimap{display:block;border-radius:8px}
-        .hud-btn{background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.06);color:#fff;padding:6px 14px;border-radius:10px;cursor:pointer;font-size:16px;transition:all 0.3s ease;pointer-events:auto;font-family:'Rajdhani',sans-serif}
-        .hud-btn:hover{background:rgba(255,255,255,0.15);transform:scale(1.05)}
-        .notification-container{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:150;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:8px}
-        .notification{background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);padding:10px 24px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);color:#fff;font-size:16px;font-weight:700;animation:notificationSlide 0.3s ease;pointer-events:none}
-        @keyframes notificationSlide{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
-        
-        /* OVERLAY */
-        .overlay-container{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(15px);display:none;justify-content:center;align-items:center;z-index:200}
-        .overlay-container.active{display:flex}
-        .overlay-content{background:rgba(10,10,20,0.9);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08);border-radius:30px;padding:40px 50px;max-width:450px;width:90%;text-align:center;color:#fff;animation:slideUp 0.4s ease}
-        @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
-        .overlay-content h2{font-size:32px;margin-bottom:25px;font-family:'Orbitron',monospace}
-        .overlay-buttons{display:flex;flex-direction:column;gap:10px;margin-top:20px}
-        .game-stats{margin:20px 0;text-align:left}
-        .stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:16px}
-        .stat-row span:last-child{font-weight:700;color:var(--accent)}
-        
-        /* MOBİL KONTROLLER */
-        #touchControls{position:fixed;bottom:20px;left:0;right:0;display:none;justify-content:space-between;padding:0 20px;z-index:150;pointer-events:none}
-        #touchLeft{width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.2);pointer-events:auto;touch-action:none;position:relative}
-        #touchLeft .joystick-dot{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);pointer-events:none}
-        #touchRight{display:flex;flex-direction:column;gap:10px;pointer-events:auto}
-        #touchShoot{width:70px;height:70px;border-radius:50%;background:rgba(255,107,107,0.3);border:2px solid rgba(255,107,107,0.5);color:#fff;font-size:30px;pointer-events:auto;touch-action:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
-        #touchJump{width:60px;height:60px;border-radius:50%;background:rgba(77,150,255,0.3);border:2px solid rgba(77,150,255,0.5);color:#fff;font-size:24px;pointer-events:auto;touch-action:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
-        #touchShoot:active{background:rgba(255,107,107,0.6);transform:scale(0.95)}
-        #touchJump:active{background:rgba(77,150,255,0.6);transform:scale(0.95)}
-        .touch-aim{position:fixed;top:0;left:0;right:0;height:60%;pointer-events:auto;touch-action:none;z-index:50;display:none}
-        
-        /* RESPONSIVE */
-        @media(max-width:768px){
-            .menu-content{padding:25px;border-radius:15px}
-            .game-logo{font-size:48px}
-            .settings-grid,.htp-grid,.shop-grid,.loadout-grid,.stats-grid{grid-template-columns:1fr}
-            .control-grid{grid-template-columns:1fr}
-            .hud-container{padding:10px}
-            .hud-item{font-size:12px;padding:4px 10px}
-            .health-bar-bg{width:50px}
-            .hud-center{display:none}
-            .hud-bottom{bottom:10px;left:10px;right:10px;flex-direction:column;gap:10px;align-items:flex-start}
-            .minimap-container{display:none}
-            .overlay-content{padding:30px 20px}
-            .overlay-content h2{font-size:24px}
-            #touchControls{display:flex!important}
-            .touch-aim{display:block!important}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
-        @media(max-width:480px){
-            .menu-content{padding:20px}
-            .game-logo{font-size:36px}
-            .menu-btn{font-size:14px;padding:12px 16px}
-            .hud-left{gap:6px}
-            .hud-right{gap:6px}
-            .hud-item{font-size:10px;padding:3px 8px}
-            .health-bar-bg{width:35px}
-            .ammo-container{font-size:12px}
-            #touchLeft{width:90px;height:90px}
-            #touchShoot{width:60px;height:60px;font-size:24px}
-            #touchJump{width:50px;height:50px;font-size:20px}
+        body {
+            background: #0b0a0c;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 12px;
+            touch-action: manipulation;
+        }
+        #game-container {
+            max-width: 720px;
+            width: 100%;
+            background: #141115;
+            border-radius: 48px 48px 32px 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 0 1px #3a2a33 inset;
+            padding: 18px 18px 24px;
+            transition: all 0.2s;
+        }
+        #display {
+            background: #1c161b;
+            border-radius: 32px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 16 / 9;
+            box-shadow: 0 0 30px rgba(80, 20, 30, 0.6);
+            border: 1px solid #3d2a30;
+            touch-action: none;
+        }
+        #scene-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: #0f0b0d;
+            object-fit: cover;
+            image-rendering: crisp-edges;
+        }
+        #ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        #top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+            pointer-events: auto;
+        }
+        #menu-btn {
+            background: rgba(30, 20, 25, 0.7);
+            backdrop-filter: blur(6px);
+            border: 1px solid #6a4a54;
+            color: #f0d5d5;
+            font-size: 1.2rem;
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: 0.2s;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        #menu-btn:active { transform: scale(0.94); background: #3d2630; }
+        #scene-title {
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            padding: 6px 18px;
+            border-radius: 60px;
+            color: #ebd6d6;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid #5d3f48;
+            text-shadow: 0 0 12px #350000;
+            pointer-events: none;
+        }
+        #action-area {
+            position: absolute;
+            bottom: 24px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 16px;
+            pointer-events: none;
+        }
+        .action-btn {
+            pointer-events: auto;
+            background: rgba(20, 12, 16, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid #7a565f;
+            color: #f2e0e0;
+            padding: 12px 20px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: 0.3px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+            transition: 0.15s;
+            min-width: 100px;
+            text-align: center;
+            border-bottom: 3px solid #a55b6b;
+            text-shadow: 0 2px 4px black;
+            touch-action: manipulation;
+            cursor: pointer;
+        }
+        .action-btn:active { transform: scale(0.92); background: #281d22; }
+        .action-btn.secondary {
+            background: rgba(40, 25, 30, 0.8);
+            border-bottom-color: #6f4a52;
+            min-width: 80px;
+        }
+        #bottom-menu {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 18px;
+            padding: 8px 12px;
+            background: #1f181d;
+            border-radius: 80px;
+            border: 1px solid #3c2a30;
+            backdrop-filter: blur(4px);
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .menu-item {
+            background: transparent;
+            border: none;
+            color: #bea3a8;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 8px 12px;
+            border-radius: 40px;
+            transition: 0.2s;
+            letter-spacing: 0.3px;
+            flex: 1 0 auto;
+            text-align: center;
+            background: rgba(60, 40, 48, 0.2);
+            border: 1px solid transparent;
+            touch-action: manipulation;
+            cursor: pointer;
+        }
+        .menu-item.active {
+            background: #3b2630;
+            color: #f5dddd;
+            border-color: #936a78;
+            box-shadow: 0 0 16px #5f2e3e;
+        }
+        .menu-item:active { transform: scale(0.92); background: #432f38; }
+        #info-text {
+            color: #7a5f66;
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 14px;
+            letter-spacing: 0.8px;
+            opacity: 0.8;
+        }
+        @media (max-width: 500px) {
+            #game-container { padding: 10px; border-radius: 32px; }
+            .action-btn { padding: 10px 14px; font-size: 0.85rem; min-width: 70px; }
+            #scene-title { font-size: 0.7rem; padding: 4px 12px; }
+            #menu-btn { font-size: 1rem; padding: 4px 14px; }
+            .menu-item { font-size: 0.7rem; padding: 6px 8px; }
         }
     </style>
 </head>
 <body>
-
-<!-- ============================================================
-     ANA MENÜ
-     ============================================================ -->
-<div id="mainMenu" class="menu-container active">
-    <div class="menu-bg-animation"></div>
-    <div class="menu-content main-menu-content">
-        <div class="logo-section">
-            <div class="game-logo"><span class="logo-m">M</span><span class="logo-text">YMAR</span></div>
-            <div class="game-tagline">⚡ 3D FPS ARENA ⚡</div>
-            <div class="version-info">v3.0</div>
-        </div>
-        <div class="menu-sections">
-            <div class="menu-section">
-                <button id="playBtn" class="menu-btn primary"><span class="btn-icon">🎯</span> OYUN BAŞLAT</button>
-                <button id="quickPlayBtn" class="menu-btn"><span class="btn-icon">⚡</span> HIZLI MAÇ</button>
+<div id="game-container">
+    <div id="display">
+        <canvas id="scene-canvas" width="720" height="405"></canvas>
+        <div id="ui-overlay">
+            <div id="top-bar">
+                <button id="menu-btn">☯ MENU</button>
+                <span id="scene-title">KORİDOR</span>
+                <div style="width: 50px;"></div>
             </div>
-            <div class="menu-divider"></div>
-            <div class="menu-section">
-                <button id="shopBtn" class="menu-btn"><span class="btn-icon">🛒</span> MAĞAZA</button>
-                <button id="loadoutBtn" class="menu-btn"><span class="btn-icon">🔫</span> EKİPMAN</button>
-                <button id="statsBtn" class="menu-btn"><span class="btn-icon">📊</span> İSTATİSTİKLER</button>
-                <button id="settingsMenuBtn" class="menu-btn"><span class="btn-icon">⚙</span> AYARLAR</button>
-                <button id="howToPlayMenuBtn" class="menu-btn"><span class="btn-icon">❓</span> NASIL OYNANIR</button>
+            <div id="action-area">
+                <button class="action-btn" id="left-btn">◀ SOL</button>
+                <button class="action-btn secondary" id="action-btn">📖 İNCELE</button>
+                <button class="action-btn" id="right-btn">SAĞ ▶</button>
             </div>
-        </div>
-        <div class="menu-footer">
-            <div>👥 <span id="onlineCount">1,234</span> çevrimiçi</div>
-            <div>🟢 Sunucu: Çevrimiçi</div>
-            <div>🏆 En İyi: <span id="highScoreDisplay">0</span></div>
         </div>
     </div>
+
+    <div id="bottom-menu">
+        <button class="menu-item active" data-scene="0">⚰️ Giriş</button>
+        <button class="menu-item" data-scene="1">🕯️ Salon</button>
+        <button class="menu-item" data-scene="2">🚪 Oda</button>
+        <button class="menu-item" data-scene="3">🌑 Koridor</button>
+        <button class="menu-item" data-scene="4">🩸 Bodrum</button>
+    </div>
+    <div id="info-text">▼ korku seni bekliyor · kulaklık önerilir</div>
 </div>
-
-<!-- ============================================================
-     AYARLAR
-     ============================================================ -->
-<div id="settingsMenu" class="menu-container">
-    <div class="menu-content">
-        <div class="menu-header">
-            <button class="back-btn" id="settingsBackBtn">←</button>
-            <h2 class="menu-title">⚙ AYARLAR</h2>
-        </div>
-        <div class="settings-grid">
-            <div class="settings-category">
-                <h3>🎮 OYUN</h3>
-                <div class="setting-item"><label>Hassasiyet</label><input type="range" id="sensitivitySlider" min="1" max="20" value="10"><span id="sensitivityValue">10</span></div>
-                <div class="setting-item">
-                    <label>Crosshair</label>
-                    <div class="crosshair-selector">
-                        <button class="crosshair-option active" data-type="cross">+</button>
-                        <button class="crosshair-option" data-type="dot">●</button>
-                        <button class="crosshair-option" data-type="circle">○</button>
-                        <button class="crosshair-option" data-type="target">◎</button>
-                    </div>
-                </div>
-                <div class="setting-item"><label>FOV</label><input type="range" id="fovSlider" min="60" max="120" value="90"><span id="fovValue">90</span></div>
-            </div>
-            <div class="settings-category">
-                <h3>🔊 SES</h3>
-                <div class="setting-item"><label>Ses Efektleri</label><div class="toggle-switch"><input type="checkbox" id="soundToggle" checked><span class="toggle-slider"></span></div></div>
-                <div class="setting-item"><label>Müzik</label><div class="toggle-switch"><input type="checkbox" id="musicToggle" checked><span class="toggle-slider"></span></div></div>
-                <div class="setting-item"><label>Master Ses</label><input type="range" id="masterVolume" min="0" max="100" value="80"><span id="masterVolumeValue">80</span></div>
-            </div>
-            <div class="settings-category">
-                <h3>🎨 GÖRÜNÜM</h3>
-                <div class="setting-item"><label>Renk Körü Modu</label><div class="toggle-switch"><input type="checkbox" id="colorBlindMode"><span class="toggle-slider"></span></div></div>
-                <div class="setting-item"><label>UI Boyutu</label><select id="uiSize"><option value="small">Küçük</option><option value="medium" selected>Orta</option><option value="large">Büyük</option></select></div>
-            </div>
-        </div>
-        <button id="settingsSaveBtn" class="menu-btn primary">💾 KAYDET</button>
-    </div>
-</div>
-
-<!-- ============================================================
-     NASIL OYNANIR
-     ============================================================ -->
-<div id="howToPlayMenu" class="menu-container">
-    <div class="menu-content how-to-play-content">
-        <div class="menu-header">
-            <button class="back-btn" id="howToPlayBackBtn">←</button>
-            <h2 class="menu-title">❓ NASIL OYNANIR</h2>
-        </div>
-        <div class="htp-grid">
-            <div class="htp-section">
-                <h3>🎮 KONTROLLER</h3>
-                <div class="control-grid">
-                    <div class="control-item"><span class="key">W A S D</span><span>Hareket</span></div>
-                    <div class="control-item"><span class="key">Fare</span><span>Nişan Alma</span></div>
-                    <div class="control-item"><span class="key">Sol Tık</span><span>Ateş Et</span></div>
-                    <div class="control-item"><span class="key">Sağ Tık</span><span>Nişan Al</span></div>
-                    <div class="control-item"><span class="key">R</span><span>Yeniden Doldur</span></div>
-                    <div class="control-item"><span class="key">1,2,3</span><span>Silah Değiştir</span></div>
-                    <div class="control-item"><span class="key">Shift</span><span>Koş</span></div>
-                    <div class="control-item"><span class="key">Space</span><span>Zıpla</span></div>
-                    <div class="control-item"><span class="key">ESC</span><span>Menü</span></div>
-                </div>
-            </div>
-            <div class="htp-section">
-                <h3>🎯 OYUN MODLARI</h3>
-                <div class="mode-list">
-                    <div class="mode-item"><span class="mode-icon">💀</span><div><strong>Ölüm Maçı</strong><p>En çok öldüren kazanır</p></div></div>
-                    <div class="mode-item"><span class="mode-icon">🏆</span><div><strong>Takım Ölüm Maçı</strong><p>Takımınızla birlikte savaşın</p></div></div>
-                    <div class="mode-item"><span class="mode-icon">🎯</span><div><strong>Hedef Avı</strong><p>Belirlenen hedefleri vurun</p></div></div>
-                </div>
-            </div>
-            <div class="htp-section">
-                <h3>💡 İPUÇLARI</h3>
-                <ul class="tip-list">
-                    <li>🎯 Düşmanları kafadan vurmak daha fazla hasar verir</li>
-                    <li>🔫 Silahınızı sık sık yeniden doldurun</li>
-                    <li>🏃 Koşarak düşmanlardan kaçın</li>
-                    <li>📦 Patlayan kutulardan eşya toplayın</li>
-                    <li>🔄 Farklı silahları deneyin</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================
-     MAĞAZA
-     ============================================================ -->
-<div id="shopMenu" class="menu-container">
-    <div class="menu-content shop-content">
-        <div class="menu-header">
-            <button class="back-btn" id="shopBackBtn">←</button>
-            <h2 class="menu-title">🛒 MAĞAZA</h2>
-            <div class="currency-display">💰 <span id="currencyAmount">1,500</span></div>
-        </div>
-        <div class="shop-grid">
-            <div class="shop-category">
-                <h3>🔫 SİLAHLAR</h3>
-                <div class="shop-items">
-                    <div class="shop-item"><div class="item-preview">🔫</div><div class="item-info"><h4>Vahşi Tabanca</h4><p>Hasar:25 | Hız:Orta</p></div><button class="shop-btn buy-btn">💰 500</button></div>
-                    <div class="shop-item owned"><div class="item-preview">🔫</div><div class="item-info"><h4>Fırtına Tüfeği</h4><p>Hasar:35 | Hız:Yüksek</p></div><button class="shop-btn owned-btn">✓ Sahip</button></div>
-                    <div class="shop-item"><div class="item-preview">🔫</div><div class="item-info"><h4>Kasırga Pompalı</h4><p>Hasar:45 | Hız:Düşük</p></div><button class="shop-btn buy-btn">💰 750</button></div>
-                </div>
-            </div>
-            <div class="shop-category">
-                <h3>🎨 KARAKTERLER</h3>
-                <div class="shop-items">
-                    <div class="shop-item owned"><div class="item-preview">👤</div><div class="item-info"><h4>Varsayılan</h4><p>Standart görünüm</p></div><button class="shop-btn owned-btn">✓ Sahip</button></div>
-                    <div class="shop-item"><div class="item-preview">🦸</div><div class="item-info"><h4>Ninja</h4><p>Hızlı ve sessiz</p></div><button class="shop-btn buy-btn">💰 1,000</button></div>
-                    <div class="shop-item"><div class="item-preview">🤖</div><div class="item-info"><h4>Robot</h4><p>Gelişmiş görünüm</p></div><button class="shop-btn buy-btn">💰 1,500</button></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================
-     EKİPMAN
-     ============================================================ -->
-<div id="loadoutMenu" class="menu-container">
-    <div class="menu-content loadout-content">
-        <div class="menu-header">
-            <button class="back-btn" id="loadoutBackBtn">←</button>
-            <h2 class="menu-title">🔫 EKİPMAN</h2>
-        </div>
-        <div class="loadout-grid">
-            <div class="loadout-slot"><h3>BİRİNCİL SİLAH</h3><div class="weapon-slot"><div class="weapon-icon">🔫</div><div class="weapon-name">Fırtına Tüfeği</div><div class="weapon-stats">Hasar:35 | Menzil:Uzun</div></div></div>
-            <div class="loadout-slot"><h3>İKİNCİL SİLAH</h3><div class="weapon-slot"><div class="weapon-icon">🔫</div><div class="weapon-name">Vahşi Tabanca</div><div class="weapon-stats">Hasar:25 | Menzil:Orta</div></div></div>
-            <div class="loadout-slot"><h3>YAKIN DÖVÜŞ</h3><div class="weapon-slot"><div class="weapon-icon">🗡️</div><div class="weapon-name">Bıçak</div><div class="weapon-stats">Hasar:50 | Hız:Çok Yüksek</div></div></div>
-            <div class="loadout-slot"><h3>ÖZEL EŞYA</h3><div class="weapon-slot"><div class="weapon-icon">💣</div><div class="weapon-name">El Bombası</div><div class="weapon-stats">Hasar:75 | Alan:Geniş</div></div></div>
-        </div>
-        <div class="loadout-presets">
-            <h3>HAZIR EKİPMANLAR</h3>
-            <div class="preset-buttons">
-                <button class="preset-btn active">🔴 Varsayılan</button>
-                <button class="preset-btn">🟢 Hızlı</button>
-                <button class="preset-btn">🔵 Ağır</button>
-                <button class="preset-btn">🟡 Denge</button>
-            </div>
-        </div>
-        <button id="loadoutSaveBtn" class="menu-btn primary">💾 EKİPMANI KAYDET</button>
-    </div>
-</div>
-
-<!-- ============================================================
-     İSTATİSTİKLER
-     ============================================================ -->
-<div id="statsMenu" class="menu-container">
-    <div class="menu-content stats-content">
-        <div class="menu-header">
-            <button class="back-btn" id="statsBackBtn">←</button>
-            <h2 class="menu-title">📊 İSTATİSTİKLER</h2>
-        </div>
-        <div class="stats-grid">
-            <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value" id="totalKills">1,247</div><div class="stat-label">Toplam Öldürme</div></div>
-            <div class="stat-card"><div class="stat-icon">💀</div><div class="stat-value" id="totalDeaths">856</div><div class="stat-label">Toplam Ölüm</div></div>
-            <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-value" id="kdRatio">1.46</div><div class="stat-label">K/D Oranı</div></div>
-            <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-value" id="totalScore">12,480</div><div class="stat-label">Toplam Puan</div></div>
-            <div class="stat-card"><div class="stat-icon">🏅</div><div class="stat-value" id="winStreak">5</div><div class="stat-label">Kazanma Serisi</div></div>
-            <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-value" id="accuracy">32%</div><div class="stat-label">İsabet Oranı</div></div>
-        </div>
-        <div class="stats-chart">
-            <h3>📈 SON 10 MAÇ</h3>
-            <div class="chart-bars">
-                <div class="chart-bar" style="height:60%"></div><div class="chart-bar" style="height:80%"></div>
-                <div class="chart-bar" style="height:45%"></div><div class="chart-bar" style="height:90%"></div>
-                <div class="chart-bar" style="height:70%"></div><div class="chart-bar" style="height:55%"></div>
-                <div class="chart-bar" style="height:85%"></div><div class="chart-bar" style="height:65%"></div>
-                <div class="chart-bar" style="height:95%"></div><div class="chart-bar" style="height:75%"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================
-     OYUN EKRANI
-     ============================================================ -->
-<div id="gameScreen" class="game-container">
-    <canvas id="gameCanvas"></canvas>
-    <div id="crosshair" class="crosshair">+</div>
-    
-    <!-- HUD -->
-    <div id="gameHUD" class="hud-container">
-        <div class="hud-top">
-            <div class="hud-left">
-                <div class="hud-item health-container">
-                    <span class="hud-icon">❤️</span>
-                    <div class="health-bar-bg"><div id="healthFill" class="health-bar-fill" style="width:100%"></div></div>
-                    <span id="healthDisplay">100</span>
-                </div>
-                <div class="hud-item"><span class="hud-icon">🛡️</span><span id="armorDisplay">0</span></div>
-            </div>
-            <div class="hud-center"><div class="hud-item score-display"><span>⭐ <span id="scoreDisplay">0</span></span></div></div>
-            <div class="hud-right">
-                <div class="hud-item ammo-container"><span id="ammoDisplay">30/30</span><span class="ammo-icon">🔫</span></div>
-                <div class="hud-item kill-display"><span>💀 <span id="killDisplay">0</span></span></div>
-                <button id="pauseBtn" class="hud-btn">⏸</button>
-            </div>
-        </div>
-        <div class="hud-bottom">
-            <div class="hud-item weapon-info"><span id="weaponNameDisplay">Fırtına Tüfeği</span><span class="weapon-damage">⚔️ 35</span></div>
-            <div class="hud-item minimap-container"><canvas id="minimap" width="120" height="120"></canvas></div>
-        </div>
-        <div id="notificationContainer" class="notification-container"></div>
-    </div>
-    
-    <!-- MOBİL KONTROLLER -->
-    <div id="touchControls">
-        <div id="touchLeft"><div class="joystick-dot"></div></div>
-        <div id="touchRight">
-            <button id="touchShoot">🔫</button>
-            <button id="touchJump">⬆</button>
-        </div>
-    </div>
-    <div id="touchAim" class="touch-aim"></div>
-    
-    <!-- DURAKLATMA -->
-    <div id="pauseMenu" class="overlay-container">
-        <div class="overlay-content">
-            <h2>⏸ OYUN DURDURULDU</h2>
-            <div class="overlay-buttons">
-                <button id="resumeBtn" class="menu-btn primary">▶ DEVAM ET</button>
-                <button id="pauseRestartBtn" class="menu-btn">🔄 YENİDEN BAŞLAT</button>
-                <button id="pauseMainMenuBtn" class="menu-btn secondary">← ANA MENÜ</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- OYUN BİTTİ -->
-    <div id="gameOver" class="overlay-container">
-        <div class="overlay-content">
-            <h2>💀 OYUN BİTTİ</h2>
-            <div class="game-stats">
-                <div class="stat-row"><span>⭐ Puan</span><span id="gameOverScore">0</span></div>
-                <div class="stat-row"><span>💀 Öldürme</span><span id="gameOverKills">0</span></div>
-                <div class="stat-row"><span>🏆 Rütbe</span><span id="gameOverRank">Acemi</span></div>
-            </div>
-            <div class="overlay-buttons">
-                <button id="gameOverRestartBtn" class="menu-btn primary">🔄 YENİDEN DENE</button>
-                <button id="gameOverMenuBtn" class="menu-btn secondary">← ANA MENÜ</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================
-     TÜM JAVASCRIPT TEK BLOKTA
-     ============================================================ -->
 <script>
-// ============================================================
-// MYMAR - TAM 3D FPS (KRUNKER.IO TARZI)
-// TEK DOSYADA HERŞEY
-// ============================================================
+    (function(){
+        // ------- SAHNELER (5 farklı korku sahnesi) -------
+        const SCENES = [
+            { 
+                id: 0, 
+                title: 'GİRİŞ · YALNIZLIK', 
+                desc: 'Eski bir malikanenin girişi. Kapı ardına kadar açık. İçeriden soğuk bir rüzgar esiyor.',
+                bg: '#0f0b0e',
+                details: 'Duvarda asılı bir tablo, gözleri takip ediyor sanki.',
+                actionText: 'Fısıltı duy',
+                actionEffect: 'Kulaklarında bir fısıltı… "Gel…"',
+                leftAction: 'Koridora gir',
+                rightAction: 'Merdivenlere yönel'
+            },
+            { 
+                id: 1, 
+                title: 'SALON · KAN LEKELERİ', 
+                desc: 'Büyük salon, avizeden sarkan gölgeler. Yerde eski kan lekeleri var.',
+                bg: '#161011',
+                details: 'Piyano kendi kendine bir nota çalıyor…',
+                actionText: 'Piyanoyu incele',
+                actionEffect: 'Bir nota daha… "Si bemol"… tüyler ürpertici.',
+                leftAction: 'Mutfak geçidi',
+                rightAction: 'Kütüphaneye'
+            },
+            { 
+                id: 2, 
+                title: 'ODA · AYNA', 
+                desc: 'Tozlu bir yatak odası. Devasa bir ayna, yansımanı bozuk gösteriyor.',
+                bg: '#130e12',
+                details: 'Aynada arkanda bir silüet beliriyor… kimse yok.',
+                actionText: 'Aynaya dokun',
+                actionEffect: 'Parmak izin camda kalıyor… sanki içeriden biri dokundu.',
+                leftAction: 'Hol',
+                rightAction: 'Tuvalet'
+            },
+            { 
+                id: 3, 
+                title: 'KORİDOR · SONSUZLUK', 
+                desc: 'Uzun, karanlık koridor. Duvarlarda eski fotoğraflar, gözleri kırmızı.',
+                bg: '#0c090b',
+                details: 'Adımların yankılanıyor… ama sanki iki kişi yürüyor.',
+                actionText: 'Feneri yak',
+                actionEffect: 'Işık bir an için bir çift göz aydınlatıyor… kayboluyor.',
+                leftAction: 'Kuzey kanadı',
+                rightAction: 'Güney kanadı'
+            },
+            { 
+                id: 4, 
+                title: 'BODRUM · NEM KOKUSU', 
+                desc: 'Nemli bodrum. Duvarlarda tuhaf semboller. Zemin çamur gibi.',
+                bg: '#0a0709',
+                details: 'Bir kazı sesi… sanki biri kazıyor.',
+                actionText: 'Sesi takip et',
+                actionEffect: 'Ses aniden kesildi… ama nefesini duyuyorsun.',
+                leftAction: 'Tünele gir',
+                rightAction: 'Merdivenlerden kaç'
+            }
+        ];
 
-class Game {
-    constructor() {
-        // Canvas
-        this.canvas = document.getElementById('gameCanvas');
-        this.ctx = this.canvas.getContext('2d');
-        this.resizeCanvas();
-        window.addEventListener('resize', () => this.resizeCanvas());
-        
-        // Oyun durumu
-        this.state = 'menu';
-        this.score = 0;
-        this.kills = 0;
-        this.deaths = 0;
-        this.health = 100;
-        this.maxHealth = 100;
-        this.armor = 0;
-        this.wave = 1;
-        this.ammo = 30;
-        this.maxAmmo = 30;
-        this.isReloading = false;
-        this.reloadTime = 0;
-        this.shootCooldown = 0;
-        this.isRunning = false;
-        this.isAiming = false;
-        
-        // Oyuncu (3D)
-        this.player = {
-            x: 0, y: 0, z: 0,
-            rotX: 0, rotY: 0,
-            height: 1.7,
-            speed: 0.06,
-            runSpeed: 0.1,
-            jumpVel: 0,
-            onGround: true
-        };
-        
-        // Silahlar
-        this.weapons = {
-            pistol: { name: 'Tabanca', damage: 25, ammo: 12, maxAmmo: 12, fireRate: 200, reloadTime: 1000, spread: 0.03, icon: '🔫' },
-            rifle: { name: 'Fırtına Tüfeği', damage: 35, ammo: 30, maxAmmo: 30, fireRate: 100, reloadTime: 1500, spread: 0.05, icon: '🔫' },
-            shotgun: { name: 'Kasırga Pompalı', damage: 15, ammo: 8, maxAmmo: 8, fireRate: 400, reloadTime: 2000, spread: 0.15, icon: '🔫' }
-        };
-        this.currentWeapon = 'rifle';
-        this.weaponIndex = 0;
-        this.weaponList = ['pistol', 'rifle', 'shotgun'];
-        
-        // Oyun nesneleri
-        this.enemies = [];
-        this.particles = [];
-        this.bullets = [];
-        this.pickups = [];
-        this.walls = [];
-        
-        // Render
-        this.fov = 90;
-        this.near = 0.1;
-        this.far = 100;
-        
-        // Giriş
-        this.keys = {};
-        this.mouse = { x: 0, y: 0, down: false, rightDown: false };
-        this.isPointerLocked = false;
-        this.touchControls = { left: false, right: false, jump: false, shoot: false };
-        this.touchAim = { x: 0, y: 0, active: false };
-        
-        // Ayarlar
-        this.soundEnabled = true;
-        this.musicEnabled = true;
-        this.sensitivity = 10;
-        this.crosshairType = 'cross';
-        this.highScore = parseInt(localStorage.getItem('mymar_highscore')) || 0;
-        
-        // Zaman
-        this.lastTime = 0;
-        this.deltaTime = 0;
-        this.time = 0;
-        this.enemySpawnTimer = 0;
-        this.maxEnemies = 8;
-        this.notifications = [];
-        
-        // Ses
-        this.audioContext = null;
-        
-        // Harita (arena)
-        this.generateMap();
-        
-        this.init();
-    }
-    
-    resizeCanvas() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-    }
-    
-    // ============================================================
-    // HARITA OLUŞTUR
-    // ============================================================
-    generateMap() {
-        // Arena duvarları
-        this.walls = [
-            { x: -15, z: -15, w: 30, d: 0.5, h: 2.5, color: '#2a2a5a' },
-            { x: -15, z: 15, w: 30, d: 0.5, h: 2.5, color: '#2a2a5a' },
-            { x: -15, z: -15, w: 0.5, d: 30, h: 2.5, color: '#2a2a5a' },
-            { x: 15, z: -15, w: 0.5, d: 30, h: 2.5, color: '#2a2a5a' },
-        ];
-        
-        // İç duvarlar ve engeller
-        const obstacles = [
-            [-5, -4, 2, 1.5, 1.2], [3, -6, 1.5, 2, 1.5],
-            [-3, 7, 2.5, 1.5, 0.8], [8, 2, 1.5, 1.5, 1.8],
-            [-8, -2, 2, 2, 1.2], [2, 4, 1.5, 2, 1.5],
-            [-6, 6, 2, 1.5, 0.9], [7, -5, 1.5, 2, 1.2],
-            [0, 0, 2.5, 2.5, 2], [4, -2, 2, 1.5, 0.8],
-            [-4, 2, 1.5, 2, 1.2], [6, -7, 2, 1.5, 1.5],
-            [-7, -6, 1.5, 2, 1.8], [9, 5, 2, 1.5, 0.7],
-            [-9, 4, 1.5, 2, 1.3], [5, 8, 2, 1.5, 1.1]
-        ];
-        
-        for (const [x, z, w, d, h] of obstacles) {
-            this.walls.push({
-                x, z, w, d, h,
-                color: `hsl(${Math.random() * 60 + 200}, 30%, ${20 + Math.random() * 25}%)`
-            });
-        }
-        
-        // Power-up'lar
-        this.pickups = [
-            { x: -4, z: 3, type: 'health', value: 25, icon: '❤️', collected: false },
-            { x: 5, z: -3, type: 'armor', value: 30, icon: '🛡️', collected: false },
-            { x: -2, z: -5, type: 'ammo', value: 15, icon: '🔫', collected: false },
-            { x: 6, z: 4, type: 'health', value: 25, icon: '❤️', collected: false },
-            { x: -6, z: -3, type: 'armor', value: 30, icon: '🛡️', collected: false },
-            { x: 2, z: 7, type: 'ammo', value: 15, icon: '🔫', collected: false },
-            { x: -7, z: 2, type: 'health', value: 25, icon: '❤️', collected: false },
-            { x: 7, z: -2, type: 'armor', value: 30, icon: '🛡️', collected: false },
-        ];
-    }
-    
-    // ============================================================
-    // BAŞLANGIÇ
-    // ============================================================
-    init() {
-        this.setupKeyboard();
-        this.setupMouse();
-        this.setupTouch();
-        this.setupUI();
-        this.initAudio();
-        this.updateHighScore();
-        this.loadSettings();
-        
-        this.minimapCanvas = document.getElementById('minimap');
-        this.minimapCtx = this.minimapCanvas.getContext('2d');
-        
-        this.gameLoop = this.gameLoop.bind(this);
-        requestAnimationFrame(this.gameLoop);
-        
-        console.log('MYMAR FPS v3.0 başlatıldı!');
-        this.showNotification('🎮 MYMAR\'a Hoş Geldiniz!');
-    }
-    
-    // ============================================================
-    // SES
-    // ============================================================
-    initAudio() {
-        try {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        } catch(e) { console.warn('Ses desteği yok'); }
-    }
-    
-    playSound(type) {
-        if (!this.soundEnabled || !this.audioContext) return;
-        try {
-            const osc = this.audioContext.createOscillator();
-            const gain = this.audioContext.createGain();
-            osc.connect(gain);
-            gain.connect(this.audioContext.destination);
-            const now = this.audioContext.currentTime;
+        // ----- OYUN DURUMU -----
+        let currentSceneIndex = 0;
+        let currentScene = SCENES[0];
+        let messageTimeout = null;
+
+        // DOM referansları
+        const canvas = document.getElementById('scene-canvas');
+        const ctx = canvas.getContext('2d');
+        const sceneTitle = document.getElementById('scene-title');
+        const leftBtn = document.getElementById('left-btn');
+        const rightBtn = document.getElementById('right-btn');
+        const actionBtn = document.getElementById('action-btn');
+        const menuBtns = document.querySelectorAll('.menu-item');
+        const menuBtn = document.getElementById('menu-btn');
+
+        // ----- ÇİZİM (profesyonel atmosfer) -----
+        function drawScene(scene) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            switch(type) {
-                case 'shoot':
-                    osc.frequency.setValueAtTime(800, now);
-                    osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
-                    gain.gain.setValueAtTime(0.08, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-                    osc.start(now);
-                    osc.stop(now + 0.05);
-                    break;
-                case 'reload':
-                    osc.frequency.setValueAtTime(600, now);
-                    osc.frequency.setValueAtTime(400, now + 0.1);
-                    gain.gain.setValueAtTime(0.05, now);
-                    osc.start(now);
-                    osc.stop(now + 0.2);
-                    break;
-                case 'hit':
-                    osc.frequency.setValueAtTime(1000, now);
-                    gain.gain.setValueAtTime(0.06, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    osc.start(now);
-                    osc.stop(now + 0.1);
-                    break;
-                case 'kill':
-                    osc.frequency.setValueAtTime(1200, now);
-                    osc.frequency.setValueAtTime(800, now + 0.1);
-                    gain.gain.setValueAtTime(0.08, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-                    osc.start(now);
-                    osc.stop(now + 0.15);
-                    break;
-                case 'damage':
-                    osc.frequency.setValueAtTime(200, now);
-                    osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    osc.start(now);
-                    osc.stop(now + 0.1);
-                    break;
-                case 'pickup':
-                    osc.frequency.setValueAtTime(800, now);
-                    osc.frequency.setValueAtTime(1200, now + 0.1);
-                    gain.gain.setValueAtTime(0.06, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
-                    osc.start(now);
-                    osc.stop(now + 0.15);
-                    break;
-                case 'jump':
-                    osc.frequency.setValueAtTime(300, now);
-                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
-                    gain.gain.setValueAtTime(0.06, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-                    osc.start(now);
-                    osc.stop(now + 0.08);
-                    break;
-            }
-        } catch(e) {}
-    }
-    
-    // ============================================================
-    // KLAVYE
-    // ============================================================
-    setupKeyboard() {
-        document.addEventListener('keydown', (e) => {
-            const key = e.key.toLowerCase();
-            this.keys[key] = true;
-            if (key === 'r' && this.state === 'playing') this.startReload();
-            if (key >= '1' && key <= '3' && this.state === 'playing') {
-                const idx = parseInt(key) - 1;
-                if (idx < this.weaponList.length) this.switchWeapon(idx);
-            }
-            if (key === 'shift') this.isRunning = true;
-            if (e.key === 'Escape') {
-                if (this.state === 'playing') this.togglePause();
-                else if (this.state === 'paused') this.togglePause();
-            }
-            if (key === ' ' || key === 'space') {
-                if (this.state === 'playing' && this.player.onGround) {
-                    this.player.jumpVel = 0.15;
-                    this.player.onGround = false;
-                    this.playSound('jump');
-                }
-                e.preventDefault();
-            }
-        });
-        document.addEventListener('keyup', (e) => {
-            const key = e.key.toLowerCase();
-            this.keys[key] = false;
-            if (key === 'shift') this.isRunning = false;
-        });
-    }
-    
-    // ============================================================
-    // MOUSE
-    // ============================================================
-    setupMouse() {
-        this.canvas.addEventListener('click', () => {
-            if (this.state === 'playing' && !document.pointerLockElement) {
-                this.canvas.requestPointerLock();
-            }
-        });
-        document.addEventListener('pointerlockchange', () => {
-            this.isPointerLocked = document.pointerLockElement === this.canvas;
-        });
-        document.addEventListener('mousemove', (e) => {
-            if (!this.isPointerLocked || this.state !== 'playing') return;
-            const sens = this.sensitivity / 50;
-            this.player.rotX -= e.movementX * sens * 0.05;
-            this.player.rotY -= e.movementY * sens * 0.05;
-            this.player.rotY = Math.max(-1.2, Math.min(1.2, this.player.rotY));
-        });
-        this.canvas.addEventListener('mousedown', (e) => {
-            if (e.button === 0) {
-                this.mouse.down = true;
-                if (this.state === 'playing' && !this.isReloading) this.shoot();
-            }
-            if (e.button === 2) this.isAiming = true;
-        });
-        this.canvas.addEventListener('mouseup', (e) => {
-            if (e.button === 0) this.mouse.down = false;
-            if (e.button === 2) this.isAiming = false;
-        });
-        this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-    }
-    
-    // ============================================================
-    // MOBİL DOKUNMATİK
-    // ============================================================
-    setupTouch() {
-        const touchLeft = document.getElementById('touchLeft');
-        const touchShoot = document.getElementById('touchShoot');
-        const touchJump = document.getElementById('touchJump');
-        const touchAim = document.getElementById('touchAim');
-        
-        let touchX = 0, touchY = 0;
-        
-        // Joystick
-        touchLeft.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = touchLeft.getBoundingClientRect();
-            touchX = touch.clientX - rect.left - rect.width/2;
-            touchY = touch.clientY - rect.top - rect.height/2;
-            this.touchControls.left = false;
-            this.touchControls.right = false;
-        });
-        
-        touchLeft.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = touchLeft.getBoundingClientRect();
-            const dx = touch.clientX - rect.left - rect.width/2;
-            const dy = touch.clientY - rect.top - rect.height/2;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            const maxDist = rect.width/2;
-            
-            if (dist > 20) {
-                const angle = Math.atan2(dy, dx);
-                const moveX = Math.cos(angle) * Math.min(dist, maxDist) / maxDist;
-                const moveY = Math.sin(angle) * Math.min(dist, maxDist) / maxDist;
-                
-                this.touchControls.left = moveX < -0.3;
-                this.touchControls.right = moveX > 0.3;
-                
-                // Dikey hareket ile nişan alma
-                if (Math.abs(moveY) > 0.3) {
-                    this.player.rotY += moveY * 0.01;
-                    this.player.rotY = Math.max(-1.2, Math.min(1.2, this.player.rotY));
-                }
-            }
-        });
-        
-        touchLeft.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            this.touchControls.left = false;
-            this.touchControls.right = false;
-        });
-        
-        // Ateş
-        touchShoot.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            this.touchControls.shoot = true;
-            if (this.state === 'playing' && !this.isReloading) this.shoot();
-        });
-        touchShoot.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            this.touchControls.shoot = false;
-        });
-        
-        // Zıpla
-        touchJump.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            this.touchControls.jump = true;
-            if (this.state === 'playing' && this.player.onGround) {
-                this.player.jumpVel = 0.15;
-                this.player.onGround = false;
-                this.playSound('jump');
-            }
-        });
-        touchJump.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            this.touchControls.jump = false;
-        });
-        
-        // Dokunmatik nişan (ekranın üst kısmı)
-        touchAim.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = this.canvas.getBoundingClientRect();
-            const dx = (touch.clientX - rect.left) / rect.width - 0.5;
-            const dy = (touch.clientY - rect.top) / rect.height - 0.5;
-            
-            if (Math.abs(dx) > 0.01) {
-                this.player.rotX -= dx * 0.03;
-            }
-            if (Math.abs(dy) > 0.01) {
-                this.player.rotY -= dy * 0.02;
-                this.player.rotY = Math.max(-1.2, Math.min(1.2, this.player.rotY));
-            }
-        });
-        
-        // Mobil cihaz kontrolü
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
-        if (isMobile) {
-            document.getElementById('touchControls').style.display = 'flex';
-            touchAim.style.display = 'block';
-        }
-    }
-    
-    // ============================================================
-    // SİLAH SİSTEMİ
-    // ============================================================
-    switchWeapon(index) {
-        if (index === this.weaponIndex || this.isReloading) return;
-        this.weaponIndex = index;
-        this.currentWeapon = this.weaponList[index];
-        const weapon = this.weapons[this.currentWeapon];
-        this.ammo = weapon.maxAmmo;
-        this.updateHUD();
-        this.showNotification(`🔫 ${weapon.name}`);
-    }
-    
-    startReload() {
-        if (this.isReloading) return;
-        const weapon = this.weapons[this.currentWeapon];
-        if (this.ammo >= weapon.maxAmmo) return;
-        this.isReloading = true;
-        this.reloadTime = weapon.reloadTime;
-        this.playSound('reload');
-        this.showNotification('🔄 Yeniden dolduruluyor...');
-    }
-    
-    shoot() {
-        if (this.isReloading) return;
-        const weapon = this.weapons[this.currentWeapon];
-        if (this.ammo <= 0) { this.startReload(); return; }
-        if (this.shootCooldown > 0) return;
-        
-        this.ammo--;
-        this.shootCooldown = weapon.fireRate;
-        this.playSound('shoot');
-        
-        const spread = this.isAiming ? weapon.spread * 0.3 : weapon.spread;
-        const count = this.currentWeapon === 'shotgun' ? 8 : 1;
-        
-        for (let i = 0; i < count; i++) {
-            const angleX = (Math.random() - 0.5) * spread;
-            const angleY = (Math.random() - 0.5) * spread;
-            this.bullets.push({
-                x: this.player.x,
-                y: this.player.height - 0.2,
-                z: this.player.z,
-                dx: Math.sin(this.player.rotX + angleX) * Math.cos(this.player.rotY + angleY),
-                dy: -Math.sin(this.player.rotY + angleY),
-                dz: Math.cos(this.player.rotX + angleX) * Math.cos(this.player.rotY + angleY),
-                life: 2,
-                damage: weapon.damage,
-                speed: 0.8
-            });
-        }
-        
-        this.spawnParticles(
-            this.player.x + Math.sin(this.player.rotX) * 0.5,
-            this.player.height - 0.2,
-            this.player.z + Math.cos(this.player.rotX) * 0.5,
-            '#ffd93d', 3
-        );
-        
-        if (this.ammo <= 0) setTimeout(() => this.startReload(), 300);
-        this.updateHUD();
-    }
-    
-    // ============================================================
-    // DÜŞMAN OLUŞTUR
-    // ============================================================
-    spawnEnemy() {
-        if (this.enemies.length >= this.maxEnemies) return;
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 6 + Math.random() * 10;
-        const x = Math.cos(angle) * dist;
-        const z = Math.sin(angle) * dist;
-        if (Math.abs(x) < 3 && Math.abs(z) < 3) return;
-        
-        const health = 30 + this.wave * 5;
-        const types = ['normal', 'fast', 'tank'];
-        const type = types[Math.floor(Math.random() * types.length)];
-        let speed = 0.02 + this.wave * 0.002;
-        let size = 0.5;
-        let damage = 10 + this.wave * 2;
-        let color = `hsl(${Math.random() * 40 + 350}, 70%, 50%)`;
-        
-        if (type === 'fast') { speed *= 1.5; size = 0.4; damage *= 0.7; color = '#4d96ff'; }
-        if (type === 'tank') { speed *= 0.6; size = 0.8; damage *= 1.5; color = '#ff6b6b'; }
-        
-        this.enemies.push({
-            x, z, health, maxHealth: health, speed, size, damage,
-            attackCooldown: 0, attackRange: 1.8, state: 'idle',
-            stateTimer: 0, color, eyeAngle: 0, hitFlash: 0, type
-        });
-    }
-    
-    // ============================================================
-    // OYUN DÖNGÜSÜ
-    // ============================================================
-    gameLoop(timestamp) {
-        if (this.lastTime === 0) this.lastTime = timestamp;
-        this.deltaTime = Math.min((timestamp - this.lastTime) / 16.667, 3);
-        this.lastTime = timestamp;
-        this.time += this.deltaTime * 0.001;
-        
-        if (this.state === 'playing') {
-            this.update();
-            this.render();
-            this.renderMinimap();
-        } else {
-            this.render();
-        }
-        
-        requestAnimationFrame(this.gameLoop);
-    }
-    
-    // ============================================================
-    // GÜNCELLEME
-    // ============================================================
-    update() {
-        if (this.shootCooldown > 0) this.shootCooldown -= this.deltaTime;
-        if (this.reloadTime > 0 && this.isReloading) {
-            this.reloadTime -= this.deltaTime;
-            if (this.reloadTime <= 0) {
-                const weapon = this.weapons[this.currentWeapon];
-                this.ammo = weapon.maxAmmo;
-                this.isReloading = false;
-                this.updateHUD();
-                this.showNotification('✅ Yeniden dolduruldu!');
-            }
-        }
-        
-        this.updatePlayer();
-        this.updateEnemies();
-        this.updateBullets();
-        this.updateParticles();
-        this.updatePickups();
-        this.updateNotifications();
-        
-        this.enemySpawnTimer += this.deltaTime;
-        if (this.enemySpawnTimer > 2000 / (1 + this.wave * 0.1)) {
-            this.enemySpawnTimer = 0;
-            this.spawnEnemy();
-        }
-        
-        this.updateHUD();
-    }
-    
-    // ============================================================
-    // OYUNCU HAREKETİ
-    // ============================================================
-    updatePlayer() {
-        const p = this.player;
-        const speed = (this.isRunning ? p.runSpeed : p.speed) * this.deltaTime;
-        
-        let dx = 0, dz = 0;
-        
-        if (this.keys['w'] || this.keys['arrowup']) { dx += Math.sin(p.rotX); dz += Math.cos(p.rotX); }
-        if (this.keys['s'] || this.keys['arrowdown']) { dx -= Math.sin(p.rotX); dz -= Math.cos(p.rotX); }
-        if (this.keys['a'] || this.keys['arrowleft']) { dx -= Math.cos(p.rotX); dz += Math.sin(p.rotX); }
-        if (this.keys['d'] || this.keys['arrowright']) { dx += Math.cos(p.rotX); dz -= Math.sin(p.rotX); }
-        
-        if (this.touchControls.left) { dx -= Math.cos(p.rotX); dz += Math.sin(p.rotX); }
-        if (this.touchControls.right) { dx += Math.cos(p.rotX); dz -= Math.sin(p.rotX); }
-        
-        const len = Math.sqrt(dx*dx + dz*dz);
-        if (len > 0) { dx /= len; dz /= len; p.x += dx * speed; p.z += dz * speed; }
-        
-        p.jumpVel -= 0.006 * this.deltaTime;
-        p.y += p.jumpVel * this.deltaTime;
-        if (p.y <= 0) { p.y = 0; p.onGround = true; }
-        
-        p.x = Math.max(-13, Math.min(13, p.x));
-        p.z = Math.max(-13, Math.min(13, p.z));
-    }
-    
-    // ============================================================
-    // DÜŞMAN GÜNCELLEME
-    // ============================================================
-    updateEnemies() {
-        for (let i = this.enemies.length - 1; i >= 0; i--) {
-            const enemy = this.enemies[i];
-            if (enemy.hitFlash > 0) enemy.hitFlash -= this.deltaTime * 0.05;
-            
-            const dx = this.player.x - enemy.x;
-            const dz = this.player.z - enemy.z;
-            const dist = Math.sqrt(dx*dx + dz*dz);
-            enemy.stateTimer += this.deltaTime;
-            
-            if (dist < enemy.attackRange) {
-                enemy.state = 'attack';
-                if (enemy.attackCooldown <= 0) {
-                    this.takeDamage(enemy.damage);
-                    enemy.attackCooldown = 1000;
-                    this.playSound('damage');
-                    this.spawnParticles(enemy.x, 0.5, enemy.z, '#ff6b6b', 10);
-                }
-            } else if (dist < 14) {
-                enemy.state = 'chase';
-                const angle = Math.atan2(dx, dz);
-                const spd = enemy.speed * this.deltaTime;
-                enemy.x += Math.sin(angle) * spd;
-                enemy.z += Math.cos(angle) * spd;
-                enemy.eyeAngle = angle;
-            } else {
-                enemy.state = 'idle';
-                if (enemy.stateTimer > 2000) {
-                    enemy.stateTimer = 0;
-                    enemy.eyeAngle = Math.random() * Math.PI * 2;
-                }
-                const spd = enemy.speed * 0.3 * this.deltaTime;
-                enemy.x += Math.sin(enemy.eyeAngle) * spd;
-                enemy.z += Math.cos(enemy.eyeAngle) * spd;
-            }
-            
-            if (enemy.attackCooldown > 0) enemy.attackCooldown -= this.deltaTime;
-            enemy.x = Math.max(-14, Math.min(14, enemy.x));
-            enemy.z = Math.max(-14, Math.min(14, enemy.z));
-            
-            if (enemy.health <= 0) {
-                this.kills++;
-                this.score += 10 + this.wave * 2;
-                this.playSound('kill');
-                this.spawnParticles(enemy.x, 0.5, enemy.z, enemy.color, 25);
-                this.enemies.splice(i, 1);
-                this.updateHUD();
-                this.showNotification(`💀 Düşman öldürüldü! (+${10 + this.wave * 2} puan)`);
-                
-                if (this.kills % 5 === 0) {
-                    this.wave++;
-                    this.maxEnemies = Math.min(8 + this.wave, 20);
-                    this.showNotification(`🌊 Dalga ${this.wave}!`);
-                }
-            }
-        }
-    }
-    
-    // ============================================================
-    // MERMİLER
-    // ============================================================
-    updateBullets() {
-        for (let i = this.bullets.length - 1; i >= 0; i--) {
-            const b = this.bullets[i];
-            b.x += b.dx * b.speed * this.deltaTime;
-            b.y += b.dy * b.speed * this.deltaTime;
-            b.z += b.dz * b.speed * this.deltaTime;
-            b.life -= this.deltaTime * 0.01;
-            
-            let hit = false;
-            for (const enemy of this.enemies) {
-                const dx = b.x - enemy.x;
-                const dz = b.z - enemy.z;
-                const dist = Math.sqrt(dx*dx + dz*dz);
-                if (dist < enemy.size + 0.2 && b.y < 1.5) {
-                    enemy.health -= b.damage;
-                    enemy.hitFlash = 1;
-                    this.playSound('hit');
-                    this.spawnParticles(b.x, b.y, b.z, '#ff6b6b', 8);
-                    hit = true;
-                    break;
-                }
-            }
-            
-            if (!hit) {
-                for (const wall of this.walls) {
-                    if (b.x > wall.x - wall.w/2 && b.x < wall.x + wall.w/2 &&
-                        b.z > wall.z - wall.d/2 && b.z < wall.z + wall.d/2) {
-                        hit = true;
-                        this.spawnParticles(b.x, b.y, b.z, '#ffd93d', 5);
-                        break;
-                    }
-                }
-            }
-            
-            if (hit || b.life <= 0 || b.y < 0 || b.y > 5) {
-                this.bullets.splice(i, 1);
-            }
-        }
-    }
-    
-    // ============================================================
-    // POWER-UP'LAR
-    // ============================================================
-    updatePickups() {
-        const p = this.player;
-        for (let i = this.pickups.length - 1; i >= 0; i--) {
-            const pickup = this.pickups[i];
-            if (pickup.collected) continue;
-            const dx = p.x - pickup.x;
-            const dz = p.z - pickup.z;
-            const dist = Math.sqrt(dx*dx + dz*dz);
-            
-            if (dist < 1.2) {
-                pickup.collected = true;
-                this.playSound('pickup');
-                switch(pickup.type) {
-                    case 'health':
-                        this.health = Math.min(this.maxHealth, this.health + pickup.value);
-                        this.showNotification(`❤️ +${pickup.value} Can`);
-                        break;
-                    case 'armor':
-                        this.armor = Math.min(100, this.armor + pickup.value);
-                        this.showNotification(`🛡️ +${pickup.value} Zırh`);
-                        break;
-                    case 'ammo':
-                        const weapon = this.weapons[this.currentWeapon];
-                        this.ammo = Math.min(weapon.maxAmmo, this.ammo + pickup.value);
-                        this.showNotification(`🔫 +${pickup.value} Mermi`);
-                        break;
-                }
-                this.spawnParticles(pickup.x, 0.5, pickup.z, '#ffd93d', 15);
-                this.updateHUD();
-                
-                // Yeniden spawn
-                setTimeout(() => { pickup.collected = false; }, 10000);
-            }
-        }
-    }
-    
-    // ============================================================
-    // PARTİKÜLLER
-    // ============================================================
-    spawnParticles(x, y, z, color, count) {
-        for (let i = 0; i < count; i++) {
-            this.particles.push({
-                x, y, z,
-                vx: (Math.random() - 0.5) * 0.1,
-                vy: Math.random() * 0.1,
-                vz: (Math.random() - 0.5) * 0.1,
-                life: 1,
-                decay: 0.01 + Math.random() * 0.02,
-                size: 0.05 + Math.random() * 0.1,
-                color: color
-            });
-        }
-    }
-    
-    updateParticles() {
-        for (let i = this.particles.length - 1; i >= 0; i--) {
-            const p = this.particles[i];
-            p.x += p.vx * this.deltaTime;
-            p.y += p.vy * this.deltaTime;
-            p.z += p.vz * this.deltaTime;
-            p.vy -= 0.002 * this.deltaTime;
-            p.life -= p.decay * this.deltaTime;
-            if (p.life <= 0 || p.y < 0) this.particles.splice(i, 1);
-        }
-    }
-    
-    // ============================================================
-    // HASAR
-    // ============================================================
-    takeDamage(amount) {
-        if (this.armor > 0) {
-            const armorDmg = Math.min(this.armor, amount * 0.5);
-            this.armor -= armorDmg;
-            amount -= armorDmg;
-        }
-        this.health -= amount;
-        this.playSound('damage');
-        if (this.health <= 0) { this.health = 0; this.gameOver(); }
-        this.updateHUD();
-    }
-    
-    // ============================================================
-    // BİLDİRİMLER
-    // ============================================================
-    showNotification(text) {
-        this.notifications.push({ text, time: 3 });
-        if (this.notifications.length > 5) this.notifications.shift();
-        this.updateNotifications();
-    }
-    
-    updateNotifications() {
-        const container = document.getElementById('notificationContainer');
-        if (!container) return;
-        this.notifications = this.notifications.filter(n => n.time > 0);
-        this.notifications.forEach(n => n.time -= this.deltaTime * 0.001);
-        container.innerHTML = this.notifications.map(n => `<div class="notification">${n.text}</div>`).join('');
-    }
-    
-    // ============================================================
-    // RENDER (3D RASTERIZER)
-    // ============================================================
-    render() {
-        const ctx = this.ctx;
-        const w = this.canvas.width;
-        const h = this.canvas.height;
-        
-        // Gökyüzü
-        const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
-        skyGrad.addColorStop(0, '#0a0a2e');
-        skyGrad.addColorStop(0.5, '#1a1a4e');
-        skyGrad.addColorStop(1, '#0a0a0f');
-        ctx.fillStyle = skyGrad;
-        ctx.fillRect(0, 0, w, h);
-        
-        this.renderStars(ctx);
-        this.renderGround(ctx);
-        this.render3D(ctx);
-        this.renderWeapon(ctx);
-    }
-    
-    renderStars(ctx) {
-        for (let i = 0; i < 150; i++) {
-            const x = ((i * 137.508 + 50) % this.canvas.width);
-            const y = ((i * 269.361 + 30) % (this.canvas.height * 0.7));
-            const size = ((i * 73) % 3) + 1;
-            const alpha = 0.3 + ((i * 43) % 7) / 10 * (0.5 + Math.sin(this.time + i) * 0.5);
-            ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-    
-    renderGround(ctx) {
-        const w = this.canvas.width;
-        const h = this.canvas.height;
-        const cx = w / 2;
-        const horizon = h * 0.5;
-        
-        ctx.fillStyle = 'rgba(20, 20, 40, 0.4)';
-        ctx.fillRect(0, horizon, w, h - horizon);
-        
-        for (let i = 0; i < 40; i++) {
-            const dist = i * 0.4;
-            const scale = 1 / (1 + dist * 0.025);
-            const y = horizon + (h - horizon) * (1 - scale);
-            const width = w * scale;
-            if (i % 2 === 0) {
-                ctx.strokeStyle = `rgba(100, 100, 200, ${0.03 + scale * 0.08})`;
-                ctx.lineWidth = 0.5;
+            // Arka plan
+            const grad = ctx.createRadialGradient(360, 200, 40, 360, 200, 400);
+            grad.addColorStop(0, scene.bg || '#1a1116');
+            grad.addColorStop(0.7, '#0b070a');
+            grad.addColorStop(1, '#030103');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Vinyet efekti
+            const vignette = ctx.createRadialGradient(360, 200, 100, 360, 200, 450);
+            vignette.addColorStop(0, 'rgba(0,0,0,0)');
+            vignette.addColorStop(0.8, 'rgba(0,0,0,0.3)');
+            vignette.addColorStop(1, 'rgba(0,0,0,0.7)');
+            ctx.fillStyle = vignette;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Doku efekti (ince çizgiler)
+            ctx.strokeStyle = 'rgba(80, 40, 50, 0.1)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 20; i++) {
                 ctx.beginPath();
-                ctx.moveTo(cx - width/2, y);
-                ctx.lineTo(cx + width/2, y);
+                ctx.moveTo(0, i * 22 + 10);
+                ctx.lineTo(canvas.width, i * 18 + 40);
                 ctx.stroke();
             }
-        }
-        for (let i = -12; i <= 12; i++) {
-            const x = cx + i * 40;
-            ctx.strokeStyle = `rgba(100, 100, 200, 0.03)`;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(x, horizon);
-            ctx.lineTo(x, h);
-            ctx.stroke();
-        }
-    }
-    
-    render3D(ctx) {
-        const w = this.canvas.width;
-        const h = this.canvas.height;
-        const p = this.player;
-        const objects = [];
-        
-        for (const wall of this.walls) {
-            objects.push({
-                type: 'box', x: wall.x, z: wall.z,
-                w: wall.w, d: wall.d, h: wall.h || 2,
-                y: (wall.h || 2) / 2, color: wall.color || '#2a2a5a'
-            });
-        }
-        
-        for (const enemy of this.enemies) {
-            objects.push({
-                type: 'enemy', x: enemy.x, z: enemy.z,
-                w: enemy.size * 1.2, d: enemy.size * 1.2,
-                h: enemy.size * 2, y: enemy.size,
-                color: enemy.hitFlash > 0 ? '#ffffff' : enemy.color,
-                enemy: enemy
-            });
-        }
-        
-        for (const pickup of this.pickups) {
-            if (pickup.collected) continue;
-            const bobY = Math.sin(this.time * 2 + pickup.x) * 0.2;
-            objects.push({
-                type: 'pickup', x: pickup.x, z: pickup.z,
-                w: 0.4, d: 0.4, h: 0.4, y: 0.6 + bobY,
-                color: '#ffd93d', icon: pickup.icon, pickup: pickup
-            });
-        }
-        
-        for (const bullet of this.bullets) {
-            objects.push({
-                type: 'bullet', x: bullet.x, z: bullet.z,
-                w: 0.1, d: 0.1, h: 0.1, y: bullet.y, color: '#ffd93d'
-            });
-        }
-        
-        for (const part of this.particles) {
-            objects.push({
-                type: 'particle', x: part.x, z: part.z,
-                w: part.size, d: part.size, h: part.size, y: part.y,
-                color: part.color, alpha: part.life
-            });
-        }
-        
-        objects.sort((a,b) => {
-            const da = this.getDistance(a.x, a.z);
-            const db = this.getDistance(b.x, b.z);
-            return db - da;
-        });
-        
-        const fov = this.fov * Math.PI / 180;
-        const halfFov = fov / 2;
-        const aspect = w / h;
-        
-        for (const obj of objects) {
-            const dx = obj.x - p.x;
-            const dz = obj.z - p.z;
-            const cosX = Math.cos(p.rotX), sinX = Math.sin(p.rotX);
-            const rx = dx * cosX - dz * sinX;
-            const rz = dx * sinX + dz * cosX;
-            const dy = obj.y - p.y - p.height;
-            const cosY = Math.cos(p.rotY), sinY = Math.sin(p.rotY);
-            const ry = dy * cosY - rz * sinY;
-            const rz2 = dy * sinY + rz * cosY;
+
+            // Sahne özel sembolleri / korku ögeleri
+            ctx.shadowColor = 'rgba(100, 20, 20, 0.5)';
+            ctx.shadowBlur = 20;
             
-            if (rz2 < 0.1) continue;
-            
-            const scale = 1 / rz2;
-            const sx = w / 2 + (rx * scale * w) / (2 * Math.tan(halfFov));
-            const sy = h / 2 - (ry * scale * w) / (2 * Math.tan(halfFov) * aspect);
-            const objScale = scale * w / (2 * Math.tan(halfFov));
-            const sw = obj.w * objScale;
-            const sh = obj.h * objScale;
-            
-            if (sx < -50 || sx > w + 50) continue;
-            if (sy < -50 || sy > h + 50) continue;
-            if (sw < 0.1) continue;
-            
-            ctx.save();
-            
-            if (obj.type === 'enemy') {
-                const alpha = Math.min(1, 1 / (1 + rz2 * 0.02));
-                ctx.fillStyle = `rgba(0,0,0,${0.2 * alpha})`;
+            // her sahne için farklı görsel ipucu
+            if (scene.id === 0) {
+                // kapı silüeti
+                ctx.fillStyle = '#1f141a';
+                ctx.shadowBlur = 30;
+                ctx.fillRect(200, 60, 320, 280);
+                ctx.fillStyle = '#2d1b23';
+                ctx.fillRect(280, 140, 60, 120);
+                ctx.fillStyle = '#3a222c';
                 ctx.beginPath();
-                ctx.ellipse(sx, sy + sh * 0.5, sw * 0.6, sw * 0.2, 0, 0, Math.PI * 2);
+                ctx.arc(320, 200, 20, 0, Math.PI*2);
                 ctx.fill();
-                
-                const grad = ctx.createRadialGradient(sx - sw * 0.2, sy - sh * 0.2, 0, sx, sy, sw);
-                grad.addColorStop(0, this.lightenColor(obj.color, 30));
-                grad.addColorStop(1, obj.color);
-                ctx.fillStyle = grad;
-                ctx.globalAlpha = alpha * (obj.enemy.hitFlash > 0 ? 0.8 : 1);
-                ctx.beginPath();
-                ctx.arc(sx, sy - sh * 0.1, sw * 0.6, 0, Math.PI * 2);
-                ctx.fill();
-                
-                if (obj.enemy.state !== 'idle') {
-                    ctx.fillStyle = `rgba(255,255,255,${0.9 * alpha})`;
-                    const eyeAngle = Math.atan2(this.player.x - obj.x, this.player.z - obj.z) - this.player.rotX;
-                    const eox = Math.sin(eyeAngle) * sw * 0.15;
-                    const eoz = Math.cos(eyeAngle) * sw * 0.15;
-                    ctx.beginPath();
-                    ctx.arc(sx - sw * 0.15 + eox, sy - sh * 0.1 - eoz * 0.3, sw * 0.12, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.arc(sx + sw * 0.15 + eox, sy - sh * 0.1 - eoz * 0.3, sw * 0.12, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.fillStyle = `rgba(200,0,0,${0.9 * alpha})`;
-                    ctx.beginPath();
-                    ctx.arc(sx - sw * 0.1 + eox * 1.5, sy - sh * 0.1 - eoz * 0.3, sw * 0.05, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.arc(sx + sw * 0.2 + eox * 1.5, sy - sh * 0.1 - eoz * 0.3, sw * 0.05, 0, Math.PI * 2);
-                    ctx.fill();
+            } else if (scene.id === 1) {
+                // piyano
+                ctx.fillStyle = '#1f171b';
+                ctx.fillRect(100, 200, 200, 70);
+                ctx.fillStyle = '#2d1f24';
+                for (let i=0; i<12; i++) {
+                    ctx.fillRect(120 + i*15, 170, 8, 40);
                 }
-                
-                const healthPercent = obj.enemy.health / obj.enemy.maxHealth;
-                ctx.globalAlpha = alpha;
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.fillRect(sx - sw * 0.5, sy - sh * 0.7, sw, 3);
-                ctx.fillStyle = healthPercent > 0.5 ? '#6bcb77' : '#ff6b6b';
-                ctx.fillRect(sx - sw * 0.5, sy - sh * 0.7, sw * healthPercent, 3);
-                
-            } else if (obj.type === 'box') {
-                const alpha = Math.min(1, 1 / (1 + rz2 * 0.02));
-                ctx.fillStyle = `rgba(0,0,0,${0.15 * alpha})`;
+            } else if (scene.id === 2) {
+                // ayna
+                ctx.strokeStyle = '#5a3f47';
+                ctx.lineWidth = 6;
+                ctx.strokeRect(240, 60, 200, 260);
+                ctx.fillStyle = 'rgba(50, 30, 35, 0.3)';
+                ctx.fillRect(250, 70, 180, 240);
+                // silüet
+                ctx.fillStyle = 'rgba(20, 10, 12, 0.5)';
                 ctx.beginPath();
-                ctx.ellipse(sx, sy + sh * 0.5, sw * 0.7, sw * 0.2, 0, 0, Math.PI * 2);
+                ctx.arc(340, 190, 30, 0, Math.PI*2);
                 ctx.fill();
-                const topY = sy - sh * 0.4;
-                ctx.fillStyle = this.lightenColor(obj.color, 40);
-                ctx.globalAlpha = alpha;
-                ctx.fillRect(sx - sw * 0.4, topY, sw * 0.8, sh * 0.3);
-                ctx.fillStyle = obj.color;
-                ctx.fillRect(sx - sw * 0.4, topY + sh * 0.3, sw * 0.8, sh * 0.5);
-                ctx.strokeStyle = `rgba(255,255,255,${0.05 * alpha})`;
-                ctx.lineWidth = 0.5;
-                ctx.strokeRect(sx - sw * 0.4, topY, sw * 0.8, sh * 0.8);
-                
-            } else if (obj.type === 'pickup') {
-                const alpha = Math.min(1, 1 / (1 + rz2 * 0.02));
-                const glow = 0.5 + Math.sin(this.time * 3 + obj.x) * 0.5;
-                ctx.globalAlpha = alpha;
-                ctx.fillStyle = '#ffd93d';
-                ctx.shadowColor = '#ffd93d';
-                ctx.shadowBlur = 20 + glow * 10;
-                ctx.font = `${sw * 3}px sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(obj.icon, sx, sy);
-                ctx.shadowBlur = 0;
-                
-            } else if (obj.type === 'bullet') {
-                ctx.globalAlpha = 1;
-                ctx.fillStyle = '#ffd93d';
-                ctx.shadowColor = '#ffd93d';
-                ctx.shadowBlur = 15;
-                ctx.beginPath();
-                ctx.arc(sx, sy, sw * 2, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-                
-            } else if (obj.type === 'particle') {
-                ctx.globalAlpha = obj.alpha;
-                ctx.fillStyle = obj.color;
-                ctx.shadowColor = obj.color;
-                ctx.shadowBlur = 5;
-                ctx.beginPath();
-                ctx.arc(sx, sy, Math.max(0.5, sw), 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
+            } else if (scene.id === 3) {
+                // fotoğraf çerçeveleri
+                for (let i=0; i<3; i++) {
+                    ctx.strokeStyle = '#3d2a30';
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(100 + i*160, 80, 70, 90);
+                    ctx.fillStyle = 'rgba(40, 20, 25, 0.2)';
+                    ctx.fillRect(108 + i*160, 88, 54, 74);
+                }
+            } else if (scene.id === 4) {
+                // semboller
+                ctx.strokeStyle = '#5a2e38';
+                ctx.lineWidth = 3;
+                for (let i=0; i<5; i++) {
+                    ctx.beginPath();
+                    ctx.arc(140 + i*100, 300, 20, 0, Math.PI*2);
+                    ctx.stroke();
+                }
             }
-            
-            ctx.restore();
-        }
-    }
-    
-    // ============================================================
-    // SİLAH RENDER
-    // ============================================================
-    renderWeapon(ctx) {
-        const w = this.canvas.width;
-        const h = this.canvas.height;
-        const weapon = this.weapons[this.currentWeapon];
-        const gunX = w - 180;
-        const gunY = h - 140;
-        const aimOffset = this.isAiming ? 40 : 0;
-        
-        ctx.save();
-        ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.shadowBlur = 20;
-        
-        // Silah gövdesi
-        const grad = ctx.createLinearGradient(gunX, gunY - aimOffset, gunX + 60, gunY + 80 - aimOffset);
-        grad.addColorStop(0, '#4a4a6a');
-        grad.addColorStop(0.3, '#3a3a5a');
-        grad.addColorStop(0.7, '#2a2a4a');
-        grad.addColorStop(1, '#1a1a2a');
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.roundRect(gunX, gunY - aimOffset, 100, 60, 8);
-        ctx.fill();
-        
-        // Namlu
-        const barrelGrad = ctx.createLinearGradient(gunX + 90, gunY - aimOffset + 10, gunX + 130, gunY - aimOffset + 40);
-        barrelGrad.addColorStop(0, '#3a3a5a');
-        barrelGrad.addColorStop(0.5, '#4a4a6a');
-        barrelGrad.addColorStop(1, '#2a2a4a');
-        ctx.fillStyle = barrelGrad;
-        ctx.fillRect(gunX + 90, gunY - aimOffset + 10, 40, 12);
-        ctx.fillRect(gunX + 90, gunY - aimOffset + 38, 40, 12);
-        ctx.fillStyle = '#2a2a4a';
-        ctx.fillRect(gunX + 120, gunY - aimOffset + 8, 15, 44);
-        
-        // Kabza
-        const gripGrad = ctx.createLinearGradient(gunX + 10, gunY - aimOffset + 50, gunX + 35, gunY - aimOffset + 90);
-        gripGrad.addColorStop(0, '#2a2a2a');
-        gripGrad.addColorStop(1, '#1a1a1a');
-        ctx.fillStyle = gripGrad;
-        ctx.beginPath();
-        ctx.roundRect(gunX + 10, gunY - aimOffset + 50, 25, 40, 4);
-        ctx.fill();
-        
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(gunX + 30, gunY - aimOffset + 50, 5, 15);
-        ctx.fillStyle = '#4a4a6a';
-        ctx.fillRect(gunX + 80, gunY - aimOffset, 5, 8);
-        ctx.fillRect(gunX + 80, gunY - aimOffset + 52, 5, 8);
-        
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillRect(gunX + 20, gunY - aimOffset + 15, 50, 20);
-        ctx.fillStyle = this.isReloading ? '#ff6b6b' : '#00ff88';
-        ctx.font = '12px Orbitron, monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText(this.isReloading ? '...' : `${this.ammo}`, gunX + 30, gunY - aimOffset + 31);
-        
-        if (this.isReloading) {
-            ctx.fillStyle = '#ff6b6b';
-            ctx.font = '9px Rajdhani, sans-serif';
+
+            // sis efekti
+            ctx.shadowBlur = 0;
+            const fog = ctx.createRadialGradient(400, 100, 50, 300, 150, 400);
+            fog.addColorStop(0, 'rgba(50, 40, 45, 0.05)');
+            fog.addColorStop(1, 'rgba(0,0,0,0.15)');
+            ctx.fillStyle = fog;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // alt yazı (sahne detayı)
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = 'black';
+            ctx.fillStyle = '#c6a7ae';
+            ctx.font = '13px "Segoe UI", monospace';
             ctx.textAlign = 'center';
-            ctx.fillText('YENİDEN DOLDUR', gunX + 50, gunY - aimOffset + 48);
+            ctx.fillText('▸ ' + scene.desc.substring(0, 48) + '…', 360, 380);
+            
+            // küçük detay
+            ctx.font = '10px monospace';
+            ctx.fillStyle = '#5e414a';
+            ctx.fillText('✦ ' + scene.details, 360, 398);
         }
-        
-        ctx.restore();
-        
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        ctx.font = '12px Orbitron, monospace';
-        ctx.textAlign = 'right';
-        ctx.fillText(weapon.name.toUpperCase(), w - 20, h - 60);
-    }
-    
-    // ============================================================
-    // MINIMAP
-    // ============================================================
-    renderMinimap() {
-        const ctx = this.minimapCtx;
-        const size = 120;
-        ctx.fillStyle = 'rgba(0,0,0,0.7)';
-        ctx.fillRect(0, 0, size, size);
-        
-        const scale = size / 30;
-        const cx = size / 2;
-        const cy = size / 2;
-        
-        ctx.fillStyle = 'rgba(255,255,255,0.1)';
-        for (const wall of this.walls) {
-            const x = cx + wall.x * scale;
-            const y = cy + wall.z * scale;
-            ctx.fillRect(x - wall.w/2 * scale, y - wall.d/2 * scale, wall.w * scale, wall.d * scale);
-        }
-        
-        for (const enemy of this.enemies) {
-            const x = cx + enemy.x * scale;
-            const y = cy + enemy.z * scale;
-            ctx.fillStyle = '#ff6b6b';
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        
-        for (const pickup of this.pickups) {
-            if (pickup.collected) continue;
-            const x = cx + pickup.x * scale;
-            const y = cy + pickup.z * scale;
-            ctx.fillStyle = '#ffd93d';
-            ctx.beginPath();
-            ctx.arc(x, y, 2, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        
-        const px = cx + this.player.x * scale;
-        const py = cy + this.player.z * scale;
-        ctx.fillStyle = '#6bcb77';
-        ctx.beginPath();
-        ctx.arc(px, py, 4, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.strokeStyle = '#6bcb77';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(px, py);
-        ctx.lineTo(px + Math.sin(this.player.rotX) * 8, py + Math.cos(this.player.rotX) * 8);
-        ctx.stroke();
-        
-        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(0, 0, size, size);
-    }
-    
-    // ============================================================
-    // YARDIMCI
-    // ============================================================
-    getDistance(x, z) {
-        const dx = x - this.player.x;
-        const dz = z - this.player.z;
-        return Math.sqrt(dx*dx + dz*dz);
-    }
-    
-    lightenColor(color, amount) {
-        if (color.startsWith('#')) {
-            const r = parseInt(color.slice(1,3), 16);
-            const g = parseInt(color.slice(3,5), 16);
-            const b = parseInt(color.slice(5,7), 16);
-            return `rgb(${Math.min(255, r + amount)}, ${Math.min(255, g + amount)}, ${Math.min(255, b + amount)})`;
-        }
-        return color;
-    }
-    
-    // ============================================================
-    // HUD
-    // ============================================================
-    updateHUD() {
-        document.getElementById('healthDisplay').textContent = Math.round(this.health);
-        document.getElementById('healthFill').style.width = `${(this.health / this.maxHealth) * 100}%`;
-        document.getElementById('armorDisplay').textContent = Math.round(this.armor);
-        document.getElementById('scoreDisplay').textContent = this.score;
-        document.getElementById('killDisplay').textContent = this.kills;
-        document.getElementById('ammoDisplay').textContent = `${this.ammo}/${this.weapons[this.currentWeapon].maxAmmo}`;
-        document.getElementById('weaponNameDisplay').textContent = this.weapons[this.currentWeapon].name;
-        document.querySelector('.weapon-damage').textContent = `⚔️ ${this.weapons[this.currentWeapon].damage}`;
-    }
-    
-    updateHighScore() {
-        document.getElementById('highScoreDisplay').textContent = this.highScore;
-    }
-    
-    // ============================================================
-    // AYARLAR
-    // ============================================================
-    loadSettings() {
-        const saved = localStorage.getItem('mymar_settings');
-        if (saved) {
-            try {
-                const settings = JSON.parse(saved);
-                this.sensitivity = settings.sensitivity || 10;
-                this.crosshairType = settings.crosshair || 'cross';
-                this.fov = settings.fov || 90;
-                this.soundEnabled = settings.sound !== false;
-                this.musicEnabled = settings.music !== false;
-                document.getElementById('sensitivitySlider').value = this.sensitivity;
-                document.getElementById('sensitivityValue').textContent = this.sensitivity;
-                document.getElementById('fovSlider').value = this.fov;
-                document.getElementById('fovValue').textContent = this.fov;
-                document.getElementById('soundToggle').checked = this.soundEnabled;
-                document.getElementById('musicToggle').checked = this.musicEnabled;
-                this.updateCrosshair();
-            } catch(e) {}
-        }
-    }
-    
-    saveSettings() {
-        const settings = {
-            sensitivity: this.sensitivity,
-            crosshair: this.crosshairType,
-            fov: this.fov,
-            sound: this.soundEnabled,
-            music: this.musicEnabled
-        };
-        localStorage.setItem('mymar_settings', JSON.stringify(settings));
-    }
-    
-    updateCrosshair() {
-        const ch = document.getElementById('crosshair');
-        ch.className = 'crosshair';
-        if (this.crosshairType !== 'cross') ch.classList.add(this.crosshairType);
-        ch.textContent = this.crosshairType === 'cross' ? '+' :
-                        this.crosshairType === 'dot' ? '●' :
-                        this.crosshairType === 'circle' ? '○' : '◎';
-    }
-    
-    // ============================================================
-    // UI OLAYLARI
-    // ============================================================
-    setupUI() {
-        // Ana menü
-        document.getElementById('playBtn').addEventListener('click', () => this.startGame());
-        document.getElementById('quickPlayBtn').addEventListener('click', () => this.startGame());
-        
-        document.getElementById('settingsMenuBtn').addEventListener('click', () => {
-            document.getElementById('mainMenu').classList.remove('active');
-            document.getElementById('settingsMenu').classList.add('active');
-        });
-        document.getElementById('howToPlayMenuBtn').addEventListener('click', () => {
-            document.getElementById('mainMenu').classList.remove('active');
-            document.getElementById('howToPlayMenu').classList.add('active');
-        });
-        document.getElementById('shopBtn').addEventListener('click', () => {
-            document.getElementById('mainMenu').classList.remove('active');
-            document.getElementById('shopMenu').classList.add('active');
-        });
-        document.getElementById('loadoutBtn').addEventListener('click', () => {
-            document.getElementById('mainMenu').classList.remove('active');
-            document.getElementById('loadoutMenu').classList.add('active');
-        });
-        document.getElementById('statsBtn').addEventListener('click', () => {
-            document.getElementById('mainMenu').classList.remove('active');
-            document.getElementById('statsMenu').classList.add('active');
-        });
-        
-        // Geri butonları
-        document.getElementById('settingsBackBtn').addEventListener('click', () => {
-            document.getElementById('settingsMenu').classList.remove('active');
-            document.getElementById('mainMenu').classList.add('active');
-        });
-        document.getElementById('howToPlayBackBtn').addEventListener('click', () => {
-            document.getElementById('howToPlayMenu').classList.remove('active');
-            document.getElementById('mainMenu').classList.add('active');
-        });
-        document.getElementById('shopBackBtn').addEventListener('click', () => {
-            document.getElementById('shopMenu').classList.remove('active');
-            document.getElementById('mainMenu').classList.add('active');
-        });
-        document.getElementById('loadoutBackBtn').addEventListener('click', () => {
-            document.getElementById('loadoutMenu').classList.remove('active');
-            document.getElementById('mainMenu').classList.add('active');
-        });
-        document.getElementById('statsBackBtn').addEventListener('click', () => {
-            document.getElementById('statsMenu').classList.remove('active');
-            document.getElementById('mainMenu').classList.add('active');
-        });
-        
-        // Ayarlar
-        document.getElementById('settingsSaveBtn').addEventListener('click', () => {
-            this.saveSettings();
-            this.showNotification('✅ Ayarlar kaydedildi!');
-            document.getElementById('settingsMenu').classList.remove('active');
-            document.getElementById('mainMenu').classList.add('active');
-        });
-        
-        document.getElementById('sensitivitySlider').addEventListener('input', (e) => {
-            this.sensitivity = parseInt(e.target.value);
-            document.getElementById('sensitivityValue').textContent = this.sensitivity;
-        });
-        document.getElementById('fovSlider').addEventListener('input', (e) => {
-            this.fov = parseInt(e.target.value);
-            document.getElementById('fovValue').textContent = this.fov;
-        });
-        document.getElementById('soundToggle').addEventListener('change', (e) => {
-            this.soundEnabled = e.target.checked;
-        });
-        document.getElementById('musicToggle').addEventListener('change', (e) => {
-            this.musicEnabled = e.target.checked;
-        });
-        
-        document.querySelectorAll('.crosshair-option').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.crosshair-option').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.crosshairType = btn.dataset.type;
-                this.updateCrosshair();
-            });
-        });
-        
-        // Duraklatma
-        document.getElementById('pauseBtn').addEventListener('click', () => this.togglePause());
-        document.getElementById('resumeBtn').addEventListener('click', () => this.togglePause());
-        document.getElementById('pauseRestartBtn').addEventListener('click', () => {
-            document.getElementById('pauseMenu').classList.remove('active');
-            this.restartGame();
-        });
-        document.getElementById('pauseMainMenuBtn').addEventListener('click', () => {
-            document.getElementById('pauseMenu').classList.remove('active');
-            this.goToMenu();
-        });
-        
-        // Oyun bitti
-        document.getElementById('gameOverRestartBtn').addEventListener('click', () => {
-            document.getElementById('gameOver').classList.remove('active');
-            this.restartGame();
-        });
-        document.getElementById('gameOverMenuBtn').addEventListener('click', () => {
-            document.getElementById('gameOver').classList.remove('active');
-            this.goToMenu();
-        });
-        
-        // Loadout presets
-        document.querySelectorAll('.preset-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.showNotification(`✅ ${btn.textContent.trim()} ekipmanı yüklendi!`);
-            });
-        });
-        
-        // Mağaza
-        document.querySelectorAll('.buy-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.showNotification('🛒 Satın alındı!');
-                btn.textContent = '✓ Satın Alındı';
-                btn.className = 'shop-btn owned-btn';
-            });
-        });
-    }
-    
-    // ============================================================
-    // OYUN DURUMU
-    // ============================================================
-    startGame() {
-        this.state = 'playing';
-        this.score = 0;
-        this.kills = 0;
-        this.deaths = 0;
-        this.health = this.maxHealth;
-        this.armor = 0;
-        this.wave = 1;
-        this.ammo = this.weapons.rifle.maxAmmo;
-        this.isReloading = false;
-        this.enemies = [];
-        this.particles = [];
-        this.bullets = [];
-        this.pickups.forEach(p => p.collected = false);
-        this.enemySpawnTimer = 0;
-        this.maxEnemies = 8;
-        this.notifications = [];
-        
-        this.player.x = 0;
-        this.player.z = 0;
-        this.player.y = 0;
-        this.player.rotX = 0;
-        this.player.rotY = 0;
-        
-        document.querySelectorAll('.menu-container').forEach(m => m.classList.remove('active'));
-        document.getElementById('gameScreen').classList.add('active');
-        document.getElementById('gameOver').classList.remove('active');
-        document.getElementById('pauseMenu').classList.remove('active');
-        document.getElementById('crosshair').style.display = 'block';
-        
-        this.canvas.requestPointerLock();
-        for (let i = 0; i < 4; i++) this.spawnEnemy();
-        this.updateHUD();
-        this.showNotification('🎯 Oyun başladı! Düşmanları avla!');
-    }
-    
-    restartGame() { this.startGame(); }
-    
-    togglePause() {
-        if (this.state === 'playing') {
-            this.state = 'paused';
-            document.getElementById('pauseMenu').classList.add('active');
-            if (document.pointerLockElement) document.exitPointerLock();
-        } else if (this.state === 'paused') {
-            this.state = 'playing';
-            document.getElementById('pauseMenu').classList.remove('active');
-            this.canvas.requestPointerLock();
-        }
-    }
-    
-    gameOver() {
-        this.state = 'gameOver';
-        this.deaths++;
-        if (this.score > this.highScore) {
-            this.highScore = this.score;
-            localStorage.setItem('mymar_highscore', this.highScore.toString());
-            this.updateHighScore();
-        }
-        
-        let rank = 'Acemi';
-        if (this.score > 100) rank = 'Çaylak';
-        if (this.score > 250) rank = 'Savaşçı';
-        if (this.score > 500) rank = 'Uzman';
-        if (this.score > 1000) rank = 'Efsane';
-        if (this.score > 2000) rank = 'Efsanevi';
-        
-        document.getElementById('gameOverScore').textContent = this.score;
-        document.getElementById('gameOverKills').textContent = this.kills;
-        document.getElementById('gameOverRank').textContent = rank;
-        document.getElementById('gameOver').classList.add('active');
-        if (document.pointerLockElement) document.exitPointerLock();
-    }
-    
-    goToMenu() {
-        this.state = 'menu';
-        document.getElementById('gameScreen').classList.remove('active');
-        document.getElementById('mainMenu').classList.add('active');
-        document.getElementById('crosshair').style.display = 'none';
-        if (document.pointerLockElement) document.exitPointerLock();
-    }
-}
 
-// ============================================================
-// POLYFILL
-// ============================================================
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
-        if (r > w/2) r = w/2;
-        if (r > h/2) r = h/2;
-        this.moveTo(x + r, y);
-        this.arcTo(x + w, y, x + w, y + h, r);
-        this.arcTo(x + w, y + h, x, y + h, r);
-        this.arcTo(x, y + h, x, y, r);
-        this.arcTo(x, y, x + w, y, r);
-        return this;
-    };
-}
+        // ----- OYUN GÜNCELLEME -----
+        function updateUI(scene) {
+            currentScene = scene;
+            sceneTitle.textContent = scene.title.toUpperCase();
+            actionBtn.textContent = scene.actionText || 'İNCELE';
+            leftBtn.textContent = scene.leftAction || '◀ SOL';
+            rightBtn.textContent = scene.rightAction || 'SAĞ ▶';
+            drawScene(scene);
 
-// ============================================================
-// OYUNU BAŞLAT
-// ============================================================
-const game = new Game();
+            // menü aktif
+            menuBtns.forEach((btn, idx) => {
+                btn.classList.toggle('active', parseInt(btn.dataset.scene) === scene.id);
+            });
+        }
 
-window.addEventListener('error', (e) => {
-    console.error('Oyun hatası:', e.message);
-});
+        // ----- SAHNE DEĞİŞTİR (geçiş efekti) -----
+        function goToScene(index) {
+            if (index < 0 || index >= SCENES.length) return;
+            currentSceneIndex = index;
+            const newScene = SCENES[index];
+            updateUI(newScene);
+            // kısa mesaj
+            showFloatingMessage(newScene.details, 1800);
+        }
+
+        // geçici mesaj
+        function showFloatingMessage(msg, duration = 2000) {
+            const titleEl = document.getElementById('scene-title');
+            const original = titleEl.textContent;
+            titleEl.textContent = '⚠️ ' + msg.substring(0, 40);
+            titleEl.style.color = '#eac2c2';
+            if (messageTimeout) clearTimeout(messageTimeout);
+            messageTimeout = setTimeout(() => {
+                titleEl.textContent = original;
+                titleEl.style.color = '';
+                messageTimeout = null;
+            }, duration);
+        }
+
+        // ----- AKSİYON BUTONLARI -----
+        function handleAction() {
+            const scene = currentScene;
+            const effect = scene.actionEffect || 'Bir şey hissettin...';
+            showFloatingMessage(effect, 2200);
+            // görsel tepki
+            ctx.shadowBlur = 60;
+            ctx.fillStyle = 'rgba(70, 20, 20, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            setTimeout(() => drawScene(scene), 300);
+        }
+
+        function handleLeft() {
+            let newIdx = (currentSceneIndex - 1 + SCENES.length) % SCENES.length;
+            goToScene(newIdx);
+            showFloatingMessage('⏎ ' + SCENES[newIdx].title, 1000);
+        }
+
+        function handleRight() {
+            let newIdx = (currentSceneIndex + 1) % SCENES.length;
+            goToScene(newIdx);
+            showFloatingMessage('⏎ ' + SCENES[newIdx].title, 1000);
+        }
+
+        // ----- MENÜ (hızlı geçiş) -----
+        function setupMenu() {
+            menuBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(btn.dataset.scene);
+                    if (!isNaN(idx) && idx !== currentSceneIndex) {
+                        goToScene(idx);
+                        showFloatingMessage('⟳ ' + SCENES[idx].title, 900);
+                    }
+                });
+                btn.addEventListener('touchstart', (e) => {
+                    // mobil dokunma
+                }, {passive: true});
+            });
+        }
+
+        // ----- MENU BUTONU (oyun içi) -----
+        function toggleMenu() {
+            const bottom = document.getElementById('bottom-menu');
+            const isHidden = bottom.style.display === 'none';
+            bottom.style.display = isHidden ? 'flex' : 'none';
+            showFloatingMessage(isHidden ? 'MENU AÇIK' : 'MENU KAPALI', 800);
+        }
+
+        // ----- BAŞLAT -----
+        function init() {
+            // canvas boyutlandırma
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width > 0) {
+                canvas.width = 720;
+                canvas.height = 405;
+            }
+            // ilk sahne
+            currentSceneIndex = 0;
+            updateUI(SCENES[0]);
+            // eventler
+            actionBtn.addEventListener('click', handleAction);
+            leftBtn.addEventListener('click', handleLeft);
+            rightBtn.addEventListener('click', handleRight);
+            menuBtn.addEventListener('click', toggleMenu);
+            // mobil dokunma desteği
+            [actionBtn, leftBtn, rightBtn, menuBtn].forEach(el => {
+                el.addEventListener('touchstart', (e) => {
+                    e.preventDefault(); // tıklama çakışması
+                }, {passive: false});
+            });
+            setupMenu();
+            // alt menü başlangıçta açık
+            document.getElementById('bottom-menu').style.display = 'flex';
+            // canvas yeniden çizim
+            window.addEventListener('resize', () => { drawScene(currentScene); });
+            // ekstra korku: zamanlayıcı ile fısıltı
+            setInterval(() => {
+                if (Math.random() < 0.15) {
+                    const whispers = ['… neden geldin?', '… arkana bak.', '… yalnız değilsin.', '… kaç!'];
+                    showFloatingMessage('✦ ' + whispers[Math.floor(Math.random()*whispers.length)], 1400);
+                }
+            }, 8000);
+        }
+
+        // DOM hazır
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
 </script>
 </body>
-  </html>
+            </html>
