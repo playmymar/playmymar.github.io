@@ -3,24 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MYMAR - Macera Oyunu</title>
+    <title>MYMAR - 3D FPS</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Ana Menü -->
     <div id="mainMenu" class="menu-container active">
+        <div class="menu-background"></div>
         <div class="menu-content">
             <div class="logo-container">
                 <h1 class="game-title">MYMAR</h1>
+                <span class="game-subtitle">3D FPS</span>
                 <div class="title-decoration"></div>
             </div>
             <div class="menu-buttons">
-                <button id="startGameBtn" class="menu-btn primary">Oyunu Başlat</button>
-                <button id="settingsBtn" class="menu-btn">Ayarlar</button>
-                <button id="howToPlayBtn" class="menu-btn">Nasıl Oynanır</button>
+                <button id="startGameBtn" class="menu-btn primary">
+                    <span class="btn-icon">▶</span> OYUN BAŞLAT
+                </button>
+                <button id="settingsBtn" class="menu-btn">
+                    <span class="btn-icon">⚙</span> AYARLAR
+                </button>
+                <button id="howToPlayBtn" class="menu-btn">
+                    <span class="btn-icon">❓</span> NASIL OYNANIR
+                </button>
             </div>
-            <div class="menu-footer">
-                <span>v1.0</span>
+            <div class="menu-stats">
+                <span>🎯 En İyi Skor: <span id="highScoreDisplay">0</span></span>
             </div>
         </div>
     </div>
@@ -28,71 +36,89 @@
     <!-- Ayarlar Menüsü -->
     <div id="settingsMenu" class="menu-container">
         <div class="menu-content">
-            <h2 class="menu-title">Ayarlar</h2>
+            <h2 class="menu-title">⚙ AYARLAR</h2>
             <div class="settings-group">
                 <div class="setting-item">
-                    <label>Ses Efektleri</label>
+                    <label>🔊 Ses Efektleri</label>
                     <div class="toggle-switch">
                         <input type="checkbox" id="soundToggle" checked>
                         <span class="toggle-slider"></span>
                     </div>
                 </div>
                 <div class="setting-item">
-                    <label>Müzik</label>
+                    <label>🎵 Müzik</label>
                     <div class="toggle-switch">
                         <input type="checkbox" id="musicToggle" checked>
                         <span class="toggle-slider"></span>
                     </div>
                 </div>
                 <div class="setting-item">
-                    <label>Zorluk Seviyesi</label>
-                    <select id="difficultySelect">
-                        <option value="easy">Kolay</option>
-                        <option value="normal" selected>Normal</option>
-                        <option value="hard">Zor</option>
+                    <label>🎯 Hassasiyet</label>
+                    <input type="range" id="sensitivitySlider" min="1" max="10" value="5">
+                    <span id="sensitivityValue">5</span>
+                </div>
+                <div class="setting-item">
+                    <label>🎮 Crosshair</label>
+                    <select id="crosshairSelect">
+                        <option value="cross">+</option>
+                        <option value="dot">●</option>
+                        <option value="circle">○</option>
+                        <option value="target">◎</option>
                     </select>
                 </div>
             </div>
-            <button id="settingsBackBtn" class="menu-btn secondary">Geri Dön</button>
+            <button id="settingsBackBtn" class="menu-btn secondary">← GERİ DÖN</button>
         </div>
     </div>
 
-    <!-- Nasıl Oynanır Menüsü -->
+    <!-- Nasıl Oynanır -->
     <div id="howToPlayMenu" class="menu-container">
         <div class="menu-content">
-            <h2 class="menu-title">Nasıl Oynanır</h2>
+            <h2 class="menu-title">❓ NASIL OYNANIR</h2>
             <div class="how-to-play-content">
-                <div class="control-item">
-                    <span class="key">W / ↑</span>
-                    <span>Zıplamak</span>
-                </div>
-                <div class="control-item">
-                    <span class="key">A / ←</span>
-                    <span>Sola Hareket</span>
-                </div>
-                <div class="control-item">
-                    <span class="key">D / →</span>
-                    <span>Sağa Hareket</span>
-                </div>
-                <div class="control-item">
-                    <span class="key">Space</span>
-                    <span>Etkileşim / Toplama</span>
-                </div>
-                <div class="control-item">
-                    <span class="key">ESC</span>
-                    <span>Oyunu Durdur</span>
+                <div class="control-section">
+                    <h3>🎮 KONTROLLER</h3>
+                    <div class="control-item">
+                        <span class="key">W A S D</span>
+                        <span>Hareket</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="key">Fare</span>
+                        <span>Nişan Alma</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="key">Sol Tık</span>
+                        <span>Ateş Et</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="key">Sağ Tık</span>
+                        <span>Nişan Al</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="key">R</span>
+                        <span>Yeniden Doldur</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="key">1, 2, 3</span>
+                        <span>Silah Değiştir</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="key">ESC</span>
+                        <span>Menü</span>
+                    </div>
                 </div>
                 <div class="game-rules">
-                    <h3>Oyun Kuralları</h3>
+                    <h3>🎯 OYUN KURALLARI</h3>
                     <ul>
-                        <li>Tüm altınları topla ve hedefe ulaş</li>
-                        <li>Engellerden kaçın</li>
-                        <li>Her bölümde yeni zorluklar seni bekliyor</li>
-                        <li>En yüksek puanı elde etmeye çalış</li>
+                        <li>Düşmanları vurarak puan kazan</li>
+                        <li>Her düşman farklı puan değerinde</li>
+                        <li>Canın biterse oyun biter</li>
+                        <li>Patlayan kutulardan eşya topla</li>
+                        <li>En yüksek skoru yapmaya çalış</li>
                     </ul>
                 </div>
             </div>
-            <button id="howToPlayBackBtn" class="menu-btn secondary">Geri Dön</button>
+            <button id="howToPlayBackBtn" class="menu-btn secondary">← GERİ DÖN</button>
         </div>
     </div>
 
@@ -100,69 +126,70 @@
     <div id="gameScreen" class="game-container">
         <canvas id="gameCanvas"></canvas>
         
-        <!-- Oyun İçi HUD -->
+        <!-- Crosshair -->
+        <div id="crosshair" class="crosshair">+</div>
+        
+        <!-- HUD -->
         <div id="gameHUD" class="hud-container">
-            <div class="hud-left">
-                <div class="hud-item">
-                    <span class="hud-icon">❤️</span>
-                    <span id="healthDisplay">100</span>
+            <div class="hud-top">
+                <div class="hud-left">
+                    <div class="hud-item health-bar">
+                        <span class="hud-icon">❤️</span>
+                        <div class="health-bar-bg">
+                            <div id="healthFill" class="health-bar-fill" style="width: 100%"></div>
+                        </div>
+                        <span id="healthDisplay">100</span>
+                    </div>
+                    <div class="hud-item">
+                        <span class="hud-icon">⭐</span>
+                        <span id="scoreDisplay">0</span>
+                    </div>
                 </div>
-                <div class="hud-item">
-                    <span class="hud-icon">⭐</span>
-                    <span id="scoreDisplay">0</span>
+                <div class="hud-center">
+                    <div class="hud-item wave-display">
+                        <span>🌊 Dalga <span id="waveDisplay">1</span></span>
+                    </div>
+                </div>
+                <div class="hud-right">
+                    <div class="hud-item ammo-display">
+                        <span id="ammoDisplay">30/30</span>
+                        <span class="ammo-icon">🔫</span>
+                    </div>
+                    <button id="pauseBtn" class="hud-btn">⏸</button>
                 </div>
             </div>
-            <div class="hud-center">
-                <div class="hud-item">
-                    <span id="levelDisplay">Bölüm 1</span>
+            <div class="hud-bottom">
+                <div class="hud-item kill-feed" id="killFeed">
+                    <span>💀 0</span>
                 </div>
-                <div class="hud-item">
-                    <span id="objectiveDisplay">Altınları Topla: 0/5</span>
-                </div>
-            </div>
-            <div class="hud-right">
-                <button id="pauseBtn" class="hud-btn">⏸️</button>
             </div>
         </div>
 
-        <!-- Duraklatma Menüsü -->
+        <!-- Duraklatma -->
         <div id="pauseMenu" class="pause-overlay">
             <div class="pause-content">
-                <h2>Oyun Durduruldu</h2>
-                <button id="resumeBtn" class="menu-btn primary">Devam Et</button>
-                <button id="pauseRestartBtn" class="menu-btn">Yeniden Başlat</button>
-                <button id="pauseMainMenuBtn" class="menu-btn secondary">Ana Menü</button>
-            </div>
-        </div>
-
-        <!-- Bölüm Tamamlama -->
-        <div id="levelComplete" class="level-complete-overlay">
-            <div class="level-complete-content">
-                <h2>🎉 Bölüm Tamamlandı!</h2>
-                <div class="level-stats">
-                    <p>Puan: <span id="finalScore">0</span></p>
-                    <p>Toplanan Altın: <span id="finalGold">0</span></p>
-                    <p>Süre: <span id="finalTime">0</span>s</p>
-                </div>
-                <button id="nextLevelBtn" class="menu-btn primary">Sonraki Bölüm</button>
-                <button id="levelCompleteMenuBtn" class="menu-btn secondary">Ana Menü</button>
+                <h2>⏸ OYUN DURDURULDU</h2>
+                <button id="resumeBtn" class="menu-btn primary">▶ DEVAM ET</button>
+                <button id="pauseRestartBtn" class="menu-btn">🔄 YENİDEN BAŞLAT</button>
+                <button id="pauseMainMenuBtn" class="menu-btn secondary">← ANA MENÜ</button>
             </div>
         </div>
 
         <!-- Oyun Bitti -->
         <div id="gameOver" class="game-over-overlay">
             <div class="game-over-content">
-                <h2>💀 Oyun Bitti</h2>
+                <h2>💀 OYUN BİTTİ</h2>
                 <div class="level-stats">
-                    <p>Puan: <span id="gameOverScore">0</span></p>
-                    <p>Bölüm: <span id="gameOverLevel">1</span></p>
+                    <p>⭐ Puan: <span id="gameOverScore">0</span></p>
+                    <p>🎯 Vuruş: <span id="gameOverKills">0</span></p>
+                    <p>🌊 Dalga: <span id="gameOverWave">1</span></p>
                 </div>
-                <button id="gameOverRestartBtn" class="menu-btn primary">Yeniden Dene</button>
-                <button id="gameOverMenuBtn" class="menu-btn secondary">Ana Menü</button>
+                <button id="gameOverRestartBtn" class="menu-btn primary">🔄 YENİDEN DENE</button>
+                <button id="gameOverMenuBtn" class="menu-btn secondary">← ANA MENÜ</button>
             </div>
         </div>
     </div>
 
     <script src="script.js"></script>
 </body>
-</html>
+    </html>
