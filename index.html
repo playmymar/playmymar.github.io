@@ -1,214 +1,168 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MYMAR</title>
-
-<style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
-
-html,body{
-width:100%;
-height:100%;
-overflow:hidden;
-background:#000;
-font-family:Arial,Helvetica,sans-serif;
-}
-
-body{
-
-background-image:url("1000063767.png");
-background-size:cover;
-background-position:center;
-background-repeat:no-repeat;
-
-display:flex;
-justify-content:center;
-align-items:flex-end;
-
-}
-
-body::before{
-
-content:"";
-
-position:absolute;
-
-left:0;
-top:0;
-
-width:100%;
-height:100%;
-
-background:rgba(0,0,0,.20);
-
-}
-
-#press{
-
-position:absolute;
-
-bottom:120px;
-
-left:50%;
-
-transform:translateX(-50%);
-
-color:white;
-
-font-size:32px;
-
-font-weight:bold;
-
-letter-spacing:4px;
-
-text-shadow:0 0 20px white;
-
-animation:blink 1.5s infinite;
-
-z-index:5;
-
-user-select:none;
-
-}
-
-@keyframes blink{
-
-0%{
-opacity:1;
-}
-
-50%{
-opacity:.15;
-}
-
-100%{
-opacity:1;
-}
-
-}
-
-#rotate{
-
-display:none;
-
-position:fixed;
-
-left:0;
-
-top:0;
-
-width:100%;
-
-height:100%;
-
-background:black;
-
-color:white;
-
-z-index:999;
-
-justify-content:center;
-
-align-items:center;
-
-text-align:center;
-
-font-size:30px;
-
-padding:30px;
-
-}
-
-.slide{
-
-animation:slide .8s forwards;
-
-}
-
-@keyframes slide{
-
-0%{
-transform:translateY(0);
-}
-
-100%{
-transform:translateY(-100%);
-}
-
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MYMAR - Macera Oyunu</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+    <!-- Ana Menü -->
+    <div id="mainMenu" class="menu-container active">
+        <div class="menu-content">
+            <div class="logo-container">
+                <h1 class="game-title">MYMAR</h1>
+                <div class="title-decoration"></div>
+            </div>
+            <div class="menu-buttons">
+                <button id="startGameBtn" class="menu-btn primary">Oyunu Başlat</button>
+                <button id="settingsBtn" class="menu-btn">Ayarlar</button>
+                <button id="howToPlayBtn" class="menu-btn">Nasıl Oynanır</button>
+            </div>
+            <div class="menu-footer">
+                <span>v1.0</span>
+            </div>
+        </div>
+    </div>
 
-<div id="rotate">
+    <!-- Ayarlar Menüsü -->
+    <div id="settingsMenu" class="menu-container">
+        <div class="menu-content">
+            <h2 class="menu-title">Ayarlar</h2>
+            <div class="settings-group">
+                <div class="setting-item">
+                    <label>Ses Efektleri</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Müzik</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="musicToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <label>Zorluk Seviyesi</label>
+                    <select id="difficultySelect">
+                        <option value="easy">Kolay</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="hard">Zor</option>
+                    </select>
+                </div>
+            </div>
+            <button id="settingsBackBtn" class="menu-btn secondary">Geri Dön</button>
+        </div>
+    </div>
 
-📱<br><br>
+    <!-- Nasıl Oynanır Menüsü -->
+    <div id="howToPlayMenu" class="menu-container">
+        <div class="menu-content">
+            <h2 class="menu-title">Nasıl Oynanır</h2>
+            <div class="how-to-play-content">
+                <div class="control-item">
+                    <span class="key">W / ↑</span>
+                    <span>Zıplamak</span>
+                </div>
+                <div class="control-item">
+                    <span class="key">A / ←</span>
+                    <span>Sola Hareket</span>
+                </div>
+                <div class="control-item">
+                    <span class="key">D / →</span>
+                    <span>Sağa Hareket</span>
+                </div>
+                <div class="control-item">
+                    <span class="key">Space</span>
+                    <span>Etkileşim / Toplama</span>
+                </div>
+                <div class="control-item">
+                    <span class="key">ESC</span>
+                    <span>Oyunu Durdur</span>
+                </div>
+                <div class="game-rules">
+                    <h3>Oyun Kuralları</h3>
+                    <ul>
+                        <li>Tüm altınları topla ve hedefe ulaş</li>
+                        <li>Engellerden kaçın</li>
+                        <li>Her bölümde yeni zorluklar seni bekliyor</li>
+                        <li>En yüksek puanı elde etmeye çalış</li>
+                    </ul>
+                </div>
+            </div>
+            <button id="howToPlayBackBtn" class="menu-btn secondary">Geri Dön</button>
+        </div>
+    </div>
 
-Lütfen telefonunu yatay çevir.
+    <!-- Oyun Ekranı -->
+    <div id="gameScreen" class="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Oyun İçi HUD -->
+        <div id="gameHUD" class="hud-container">
+            <div class="hud-left">
+                <div class="hud-item">
+                    <span class="hud-icon">❤️</span>
+                    <span id="healthDisplay">100</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-icon">⭐</span>
+                    <span id="scoreDisplay">0</span>
+                </div>
+            </div>
+            <div class="hud-center">
+                <div class="hud-item">
+                    <span id="levelDisplay">Bölüm 1</span>
+                </div>
+                <div class="hud-item">
+                    <span id="objectiveDisplay">Altınları Topla: 0/5</span>
+                </div>
+            </div>
+            <div class="hud-right">
+                <button id="pauseBtn" class="hud-btn">⏸️</button>
+            </div>
+        </div>
 
-</div>
+        <!-- Duraklatma Menüsü -->
+        <div id="pauseMenu" class="pause-overlay">
+            <div class="pause-content">
+                <h2>Oyun Durduruldu</h2>
+                <button id="resumeBtn" class="menu-btn primary">Devam Et</button>
+                <button id="pauseRestartBtn" class="menu-btn">Yeniden Başlat</button>
+                <button id="pauseMainMenuBtn" class="menu-btn secondary">Ana Menü</button>
+            </div>
+        </div>
 
-<div id="press">
+        <!-- Bölüm Tamamlama -->
+        <div id="levelComplete" class="level-complete-overlay">
+            <div class="level-complete-content">
+                <h2>🎉 Bölüm Tamamlandı!</h2>
+                <div class="level-stats">
+                    <p>Puan: <span id="finalScore">0</span></p>
+                    <p>Toplanan Altın: <span id="finalGold">0</span></p>
+                    <p>Süre: <span id="finalTime">0</span>s</p>
+                </div>
+                <button id="nextLevelBtn" class="menu-btn primary">Sonraki Bölüm</button>
+                <button id="levelCompleteMenuBtn" class="menu-btn secondary">Ana Menü</button>
+            </div>
+        </div>
 
-OYNAMAK İÇİN HERHANGİ BİR TUŞA BASIN
+        <!-- Oyun Bitti -->
+        <div id="gameOver" class="game-over-overlay">
+            <div class="game-over-content">
+                <h2>💀 Oyun Bitti</h2>
+                <div class="level-stats">
+                    <p>Puan: <span id="gameOverScore">0</span></p>
+                    <p>Bölüm: <span id="gameOverLevel">1</span></p>
+                </div>
+                <button id="gameOverRestartBtn" class="menu-btn primary">Yeniden Dene</button>
+                <button id="gameOverMenuBtn" class="menu-btn secondary">Ana Menü</button>
+            </div>
+        </div>
+    </div>
 
-</div>
-
-<script>
-
-function orientation(){
-
-if(window.innerHeight>window.innerWidth){
-
-document.getElementById("rotate").style.display="flex";
-
-}else{
-
-document.getElementById("rotate").style.display="none";
-
-}
-
-}
-
-orientation();
-
-window.addEventListener("resize",orientation);
-
-let opened=false;
-
-function start(){
-
-if(opened)return;
-
-opened=true;
-
-document.body.classList.add("slide");
-
-setTimeout(function(){
-
-location.href="main-menu/index.html";
-
-},800);
-
-}
-
-document.addEventListener("keydown",start);
-
-document.addEventListener("click",start);
-
-document.addEventListener("touchstart",start);
-
-</script>
-
+    <script src="script.js"></script>
 </body>
 </html>
