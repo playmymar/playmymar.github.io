@@ -5,33 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MYMAR - Macera Oyunu</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
     <!-- ============================================================ -->
+    <!-- İSİM GİRİŞ EKRANI (SADECE İLK GİRİŞTE) -->
+    <!-- ============================================================ -->
+    <div id="nameScreen" class="name-container">
+        <div class="name-content">
+            <h1 class="game-title">⚔️ MYMAR</h1>
+            <div class="title-decoration"></div>
+            <p class="name-subtitle">Kahramanımızın adını öğrenelim!</p>
+            <div class="name-input-group">
+                <input type="text" id="playerNameInput" class="name-input" placeholder="Kahraman Adı..." maxlength="15">
+                <button id="nameConfirmBtn" class="menu-btn primary">🚀 Maceraya Başla</button>
+            </div>
+            <p class="name-hint">💡 Bu isim sadece bir kez sorulacak ve kaydedilecek</p>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
     <!-- ANA MENÜ -->
     <!-- ============================================================ -->
-    <div id="mainMenu" class="menu-container active">
+    <div id="mainMenu" class="menu-container">
         <div class="menu-content">
             <div class="logo-container">
                 <h1 class="game-title">⚔️ MYMAR</h1>
                 <div class="title-decoration"></div>
                 <p class="game-subtitle">Epik Macera Başlıyor!</p>
-                <p class="game-version">v3.0 - 50 Bölüm</p>
+                <p class="game-version">v4.0 - 50 Bölüm - 10 Boss</p>
+                <p class="player-name-display" id="playerNameDisplay">👤 Kahraman: İsimsiz</p>
             </div>
             <div class="menu-buttons">
                 <button id="startGameBtn" class="menu-btn primary">🎮 Oyunu Başlat</button>
                 <button id="continueGameBtn" class="menu-btn">💾 Kayıttan Devam Et</button>
                 <button id="characterSelectBtn" class="menu-btn">👤 Karakter Seç</button>
+                <button id="shopBtn" class="menu-btn">🏪 Mağaza</button>
                 <button id="settingsBtn" class="menu-btn">⚙️ Ayarlar</button>
                 <button id="howToPlayBtn" class="menu-btn">📖 Nasıl Oynanır</button>
                 <button id="leaderboardBtn" class="menu-btn">🏆 Skor Tablosu</button>
             </div>
             <div class="menu-footer">
-                <span>v3.0</span>
+                <span>v4.0</span>
                 <span>|</span>
                 <span>🎯 50 Bölüm</span>
                 <span>|</span>
                 <span>👾 10 Boss</span>
+                <span>|</span>
+                <span id="playerCurrencyDisplay">💎 0</span>
             </div>
         </div>
     </div>
@@ -97,7 +118,78 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- AYARLAR MENÜSÜ -->
+    <!-- MAĞAZA -->
+    <!-- ============================================================ -->
+    <div id="shopMenu" class="menu-container">
+        <div class="menu-content shop-content">
+            <h2 class="menu-title">🏪 Mağaza</h2>
+            <div class="shop-currency">
+                💎 Elmasların: <span id="shopGems">0</span>
+            </div>
+            <div class="shop-grid">
+                <div class="shop-item" data-item="skin_warrior_gold">
+                    <div class="shop-item-preview">⚔️</div>
+                    <h4>Altın Savaşçı</h4>
+                    <p>💎 50 Elmas</p>
+                    <button class="shop-buy-btn" data-item="skin_warrior_gold" data-price="50">Satın Al</button>
+                    <span class="shop-owned" style="display:none;">✅ Sahipsin</span>
+                </div>
+                <div class="shop-item" data-item="skin_mage_dark">
+                    <div class="shop-item-preview">🧙</div>
+                    <h4>Karanlık Büyücü</h4>
+                    <p>💎 75 Elmas</p>
+                    <button class="shop-buy-btn" data-item="skin_mage_dark" data-price="75">Satın Al</button>
+                    <span class="shop-owned" style="display:none;">✅ Sahipsin</span>
+                </div>
+                <div class="shop-item" data-item="skin_rogue_shadow">
+                    <div class="shop-item-preview">🗡️</div>
+                    <h4>Gölge Haydut</h4>
+                    <p>💎 60 Elmas</p>
+                    <button class="shop-buy-btn" data-item="skin_rogue_shadow" data-price="60">Satın Al</button>
+                    <span class="shop-owned" style="display:none;">✅ Sahipsin</span>
+                </div>
+                <div class="shop-item" data-item="skin_archer_elite">
+                    <div class="shop-item-preview">🏹</div>
+                    <h4>Elit Okçu</h4>
+                    <p>💎 80 Elmas</p>
+                    <button class="shop-buy-btn" data-item="skin_archer_elite" data-price="80">Satın Al</button>
+                    <span class="shop-owned" style="display:none;">✅ Sahipsin</span>
+                </div>
+                <div class="shop-item" data-item="skin_knight_royal">
+                    <div class="shop-item-preview">🛡️</div>
+                    <h4>Kraliyet Şövalyesi</h4>
+                    <p>💎 100 Elmas</p>
+                    <button class="shop-buy-btn" data-item="skin_knight_royal" data-price="100">Satın Al</button>
+                    <span class="shop-owned" style="display:none;">✅ Sahipsin</span>
+                </div>
+                <div class="shop-item" data-item="skin_ninja_void">
+                    <div class="shop-item-preview">🥷</div>
+                    <h4>Void Ninja</h4>
+                    <p>💎 90 Elmas</p>
+                    <button class="shop-buy-btn" data-item="skin_ninja_void" data-price="90">Satın Al</button>
+                    <span class="shop-owned" style="display:none;">✅ Sahipsin</span>
+                </div>
+                <div class="shop-item" data-item="trail_fire">
+                    <div class="shop-item-preview">🔥</div>
+                    <h4>Ateş İzi</h4>
+                    <p>💎 30 Elmas</p>
+                    <button class="shop-buy-btn" data-item="trail_fire" data-price="30">Satın Al</button>
+                    <span class="shop-owned" style="display:none;">✅ Sahipsin</span>
+                </div>
+                <div class="shop-item" data-item="trail_star">
+                    <div class="shop-item-preview">✨</div>
+                    <h4>Yıldız İzi</h4>
+                    <p>💎 40 Elmas</p>
+                    <button class="shop-buy-btn" data-item="trail_star" data-price="40">Satın Al</button>
+                    <span class="shop-owned" style="display:none;">✅ Sahipsin</span>
+                </div>
+            </div>
+            <button id="shopBackBtn" class="menu-btn secondary">⬅️ Geri Dön</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- AYARLAR -->
     <!-- ============================================================ -->
     <div id="settingsMenu" class="menu-container">
         <div class="menu-content">
@@ -156,6 +248,10 @@
                         <span class="toggle-slider"></span>
                     </div>
                 </div>
+                <div class="setting-item">
+                    <label>🗑️ Kayıt Sil</label>
+                    <button id="deleteSaveBtn" class="menu-btn danger" style="width:auto;padding:6px 16px;font-size:12px;">Sil</button>
+                </div>
             </div>
             <button id="settingsBackBtn" class="menu-btn secondary">⬅️ Geri Dön</button>
         </div>
@@ -203,11 +299,15 @@
                     </div>
                     <div class="control-item">
                         <span class="key">👆 Orta</span>
-                        <span>Zıplamak (Ekran Orta Alt - GÖRÜNMEZ)</span>
+                        <span>Zıplamak (Ekran Orta Alt)</span>
                     </div>
                     <div class="control-item">
                         <span class="key">👉 Sağ</span>
                         <span>Sağa Hareket (Ekran Sağ Alt)</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="key">🖐️ Üst Kaydır</span>
+                        <span>Haritayı Görüntüle (Mini-Map)</span>
                     </div>
                 </div>
                 <div class="game-rules">
@@ -230,6 +330,8 @@
                         <li>🔹 Altınları toplarken Combo puanı kazanırsın</li>
                         <li>🔹 Her bölümde gizli mücevherler bulunur</li>
                         <li>🔹 Boss savaşlarında desenleri öğren ve saldır</li>
+                        <li>🔹 Ekranın üst kısmında mini-map var</li>
+                        <li>🔹 Parmakla üstte kaydırarak haritayı görebilirsin</li>
                     </ul>
                 </div>
             </div>
@@ -245,16 +347,16 @@
             <h2 class="menu-title">🏆 Skor Tablosu</h2>
             <div class="leaderboard-content">
                 <div id="leaderboardList">
-                    <div class="lb-item gold"><span>👑 1.</span> <span>🎮 Şampiyon</span> <span>⭐ 25000</span></div>
-                    <div class="lb-item silver"><span>🥈 2.</span> <span>🎮 Savaşçı</span> <span>⭐ 21000</span></div>
-                    <div class="lb-item bronze"><span>🥉 3.</span> <span>🎮 Büyücü</span> <span>⭐ 18000</span></div>
-                    <div class="lb-item"><span>4.</span> <span>🎮 Okçu</span> <span>⭐ 15000</span></div>
-                    <div class="lb-item"><span>5.</span> <span>🎮 Haydut</span> <span>⭐ 12000</span></div>
-                    <div class="lb-item"><span>6.</span> <span>🎮 Şövalye</span> <span>⭐ 9000</span></div>
-                    <div class="lb-item"><span>7.</span> <span>🎮 Ninja</span> <span>⭐ 7000</span></div>
-                    <div class="lb-item"><span>8.</span> <span>🎮 Maceracı</span> <span>⭐ 5000</span></div>
-                    <div class="lb-item"><span>9.</span> <span>🎮 Kaşif</span> <span>⭐ 3000</span></div>
-                    <div class="lb-item"><span>10.</span> <span>🎮 Yolcu</span> <span>⭐ 1000</span></div>
+                    <div class="lb-item gold"><span>👑 1.</span> <span id="lb1name">🎮 Şampiyon</span> <span id="lb1score">⭐ 25000</span></div>
+                    <div class="lb-item silver"><span>🥈 2.</span> <span id="lb2name">🎮 Savaşçı</span> <span id="lb2score">⭐ 21000</span></div>
+                    <div class="lb-item bronze"><span>🥉 3.</span> <span id="lb3name">🎮 Büyücü</span> <span id="lb3score">⭐ 18000</span></div>
+                    <div class="lb-item"><span>4.</span> <span id="lb4name">🎮 Okçu</span> <span id="lb4score">⭐ 15000</span></div>
+                    <div class="lb-item"><span>5.</span> <span id="lb5name">🎮 Haydut</span> <span id="lb5score">⭐ 12000</span></div>
+                    <div class="lb-item"><span>6.</span> <span id="lb6name">🎮 Şövalye</span> <span id="lb6score">⭐ 9000</span></div>
+                    <div class="lb-item"><span>7.</span> <span id="lb7name">🎮 Ninja</span> <span id="lb7score">⭐ 7000</span></div>
+                    <div class="lb-item"><span>8.</span> <span id="lb8name">🎮 Maceracı</span> <span id="lb8score">⭐ 5000</span></div>
+                    <div class="lb-item"><span>9.</span> <span id="lb9name">🎮 Kaşif</span> <span id="lb9score">⭐ 3000</span></div>
+                    <div class="lb-item"><span>10.</span> <span id="lb10name">🎮 Yolcu</span> <span id="lb10score">⭐ 1000</span></div>
                 </div>
             </div>
             <button id="leaderboardBackBtn" class="menu-btn secondary">⬅️ Geri Dön</button>
@@ -266,8 +368,18 @@
     <!-- ============================================================ -->
     <div id="gameScreen" class="game-container">
         <canvas id="gameCanvas"></canvas>
-        
-        <!-- Oyun İçi HUD -->
+
+        <!-- ============================================================ -->
+        <!-- MİNİ-MAP (Ekran Üstü) -->
+        <!-- ============================================================ -->
+        <div id="miniMap" class="mini-map">
+            <canvas id="miniMapCanvas" width="300" height="100"></canvas>
+            <div class="mini-map-label">🗺️ Harita</div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- HUD -->
+        <!-- ============================================================ -->
         <div id="gameHUD" class="hud-container">
             <div class="hud-left">
                 <div class="hud-item">
@@ -307,7 +419,9 @@
             </div>
         </div>
 
-        <!-- Boss Can Çubuğu -->
+        <!-- ============================================================ -->
+        <!-- BOSS CAN ÇUBUĞU -->
+        <!-- ============================================================ -->
         <div id="bossHealthBar" class="boss-health-container" style="display:none;">
             <div class="boss-health-label">👾 BOSS</div>
             <div class="boss-health-track">
@@ -317,7 +431,18 @@
         </div>
 
         <!-- ============================================================ -->
-        <!-- MOBİL KONTROLLER - GÖRÜNMEZ -->
+        <!-- BOSS GİRİŞ ANİMASYONU (VS FIGHT!) -->
+        <!-- ============================================================ -->
+        <div id="bossIntro" class="boss-intro-overlay" style="display:none;">
+            <div class="boss-intro-content">
+                <div class="boss-intro-name" id="bossIntroName">👾 BOSS</div>
+                <div class="boss-intro-vs">⚔️ VS FIGHT! ⚔️</div>
+                <div class="boss-intro-sub">Hazır ol!</div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- MOBİL KONTROLLER -->
         <!-- ============================================================ -->
         <div id="mobileControls" class="mobile-controls">
             <div id="mobileLeft" class="mobile-zone left-zone"></div>
@@ -325,7 +450,9 @@
             <div id="mobileRight" class="mobile-zone right-zone"></div>
         </div>
 
-        <!-- Duraklatma Menüsü -->
+        <!-- ============================================================ -->
+        <!-- DURAKLATMA -->
+        <!-- ============================================================ -->
         <div id="pauseMenu" class="pause-overlay">
             <div class="pause-content">
                 <h2>⏸️ Oyun Durduruldu</h2>
@@ -335,7 +462,9 @@
             </div>
         </div>
 
-        <!-- Bölüm Tamamlama -->
+        <!-- ============================================================ -->
+        <!-- BÖLÜM TAMAMLAMA -->
+        <!-- ============================================================ -->
         <div id="levelComplete" class="level-complete-overlay">
             <div class="level-complete-content">
                 <h2>🎉 Bölüm Tamamlandı!</h2>
@@ -352,7 +481,9 @@
             </div>
         </div>
 
-        <!-- Boss Savaşı - Kazanma -->
+        <!-- ============================================================ -->
+        <!-- BOSS YENİLDİ -->
+        <!-- ============================================================ -->
         <div id="bossDefeated" class="boss-defeated-overlay" style="display:none;">
             <div class="boss-defeated-content">
                 <h2>👾 BOSS YENİLDİ!</h2>
@@ -366,7 +497,9 @@
             </div>
         </div>
 
-        <!-- Oyun Bitti -->
+        <!-- ============================================================ -->
+        <!-- OYUN BİTTİ -->
+        <!-- ============================================================ -->
         <div id="gameOver" class="game-over-overlay">
             <div class="game-over-content">
                 <h2>💀 Oyun Bitti</h2>
@@ -383,4 +516,4 @@
 
     <script src="script.js"></script>
 </body>
-                            </html>
+                        </html>
