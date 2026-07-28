@@ -1,6 +1,6 @@
 /**
  * MYMAR - Profesyonel Web Oyunu
- * @version 1.0
+ * @version 2.0
  * @author AI Assistant
  */
 
@@ -14,16 +14,21 @@ class Game {
         this.ctx = this.canvas.getContext('2d');
         
         // Oyun durumu
-        this.state = 'menu'; // menu, playing, paused, levelComplete, gameOver
+        this.state = 'menu';
         this.currentLevel = 1;
-        this.maxLevel = 3;
+        this.maxLevel = 10;
         this.score = 0;
         this.health = 100;
         this.maxHealth = 100;
         this.goldCollected = 0;
         this.totalGold = 0;
+        this.gemsCollected = 0;
         this.time = 0;
         this.difficulty = 'normal';
+        this.selectedCharacter = 'warrior';
+        this.charColor = '#ff6b35';
+        this.speedMultiplier = 3;
+        this.currentBg = 'default';
         
         // Giriş durumu
         this.keys = {};
@@ -38,9 +43,11 @@ class Game {
         this.player = null;
         this.platforms = [];
         this.goldItems = [];
+        this.gemItems = [];
         this.enemies = [];
         this.particles = [];
         this.exit = null;
+        this.traps = [];
         
         // Kamera
         this.camera = {
@@ -63,8 +70,26 @@ class Game {
         this.gravity = 0.6;
         this.friction = 0.8;
         
+        // Karakter özellikleri
+        this.characters = {
+            warrior: { speed: 4.5, jumpPower: 11, color: '#ff6b6b', emoji: '⚔️', name: 'Savaşçı' },
+            mage: { speed: 5, jumpPower: 13, color: '#6b5bff', emoji: '🧙', name: 'Büyücü' },
+            rogue: { speed: 6, jumpPower: 10, color: '#5bff6b', emoji: '🗡️', name: 'Haydut' },
+            archer: { speed: 4.5, jumpPower: 12, color: '#5bb5ff', emoji: '🏹', name: 'Okçu' }
+        };
+        
+        // Arka plan temaları
+        this.backgrounds = {
+            default: ['#0a0a2e', '#1a1a4e', '#2a1a3e'],
+            forest: ['#0a1a0a', '#1a3a1a', '#2a5a2a'],
+            desert: ['#3a2a1a', '#5a3a2a', '#7a4a2a'],
+            snow: ['#aaccee', '#bbddff', '#ddeeff'],
+            volcano: ['#1a0a0a', '#3a1a0a', '#5a2a0a'],
+            space: ['#0a0a1a', '#1a0a2a', '#2a0a3a']
+        };
+        
         // Bölüm verileri
-        this.levels = this.generateLevels();
+        this.levels = [];
         
         // Başlangıç
         this.init();
@@ -74,6 +99,9 @@ class Game {
     // BAŞLANGIÇ
     // ============================================================
     init() {
+        // Bölümleri oluştur
+        this.levels = this.generateLevels();
+        
         // Canvas boyutlandırma
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
@@ -81,17 +109,27 @@ class Game {
         // Klavye olayları
         this.setupKeyboard();
         
+        // Mobil kontroller
+        this.setupMobileControls();
+        
         // UI olayları
         this.setupUI();
         
         // Ses sistemi
         this.initAudio();
         
+        // Karakter seçimi
+        this.setupCharacterSelect();
+        
+        // Arka plan seçimi
+        this.setupBackgroundSelect();
+        
         // Oyun döngüsü
         this.gameLoop = this.gameLoop.bind(this);
         requestAnimationFrame(this.gameLoop);
         
-        console.log('MYMAR Oyunu başlatıldı!');
+        console.log('⚔️ MYMAR Oyunu başlatıldı!');
+        console.log(`🎮 Seçili Karakter: ${this.characters[this.selectedCharacter].name}`);
     }
     
     resizeCanvas() {
@@ -102,13 +140,137 @@ class Game {
     }
     
     // ============================================================
+    // KARAKTER SEÇİMİ
+    // ============================================================
+    setupCharacterSelect() {
+        const charBtns = document.querySelectorAll('.select-char-btn');
+        const cards = document.querySelectorAll('.character-card');
+        
+        charBtns.forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const char = btn.dataset.char;
+                this.selectedCharacter = char;
+                
+                // Seçimi güncelle
+                cards.forEach(c => c.classList.remove('selected'));
+                const parent = btn.closest('.character-card');
+                if (parent) parent.classList.add('selected');
+                
+                // Karakter rengini güncelle
+                this.charColor = this.characters[char].color;
+                document.getElementById('charColorPicker').value = this.charColor;
+                
+                // Oyuncuyu güncelle (eğer oyunda ise)
+                if (this.player) {
+                    this.player.color = this.charColor;
+                }
+                
+                console.log(`👤 Karakter seçildi: ${this.characters[char].name}`);
+            });
+        });
+        
+        // Varsayılan seçim
+        const defaultCard = document.querySelector(`.character-card[data-character="${this.selectedCharacter}"]`);
+        if (defaultCard) defaultCard.classList.add('selected');
+        
+        // Karakter seç menüsüne dönüş
+        document.getElementById('charSelectBackBtn').addEventListener('click', () => {
+            document.getElementById('characterSelectMenu').classList.remove('active');
+            document.getElementById('mainMenu').classList.add('active');
+        });
+        
+        // Ana menüden karakter seç butonu
+        document.getElementById('characterSelectBtn').addEventListener('click', () => {
+            document.getElementById('mainMenu').classList.remove('active');
+            document.getElementById('characterSelectMenu').classList.add('active');
+        });
+    }
+    
+    // ============================================================
+    // ARKA PLAN SEÇİMİ
+    // ============================================================
+    setupBackgroundSelect() {
+        const bgSelect = document.getElementById('bgSelect');
+        bgSelect.addEventListener('change', (e) => {
+            this.currentBg = e.target.value;
+            
+            // Canvas arka planını güncelle
+            if (this.currentBg !== 'default') {
+                this.canvas.classList.add(`bg-${this.currentBg}`);
+            } else {
+                this.canvas.className = '';
+            }
+            
+            console.log(`🎨 Arka plan değiştirildi: ${this.currentBg}`);
+        });
+    }
+    
+    // ============================================================
+    // MOBİL KONTROLLER
+    // ============================================================
+    setupMobileControls() {
+        const jumpBtn = document.getElementById('mobileJump');
+        const leftBtn = document.getElementById('mobileLeft');
+        const rightBtn = document.getElementById('mobileRight');
+        
+        // Zıplama (ALT - ORTA)
+        jumpBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.input.jump = true;
+        });
+        jumpBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            this.input.jump = false;
+        });
+        jumpBtn.addEventListener('mousedown', () => {
+            this.input.jump = true;
+        });
+        jumpBtn.addEventListener('mouseup', () => {
+            this.input.jump = false;
+        });
+        
+        // Sol
+        leftBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.input.left = true;
+        });
+        leftBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            this.input.left = false;
+        });
+        leftBtn.addEventListener('mousedown', () => {
+            this.input.left = true;
+        });
+        leftBtn.addEventListener('mouseup', () => {
+            this.input.left = false;
+        });
+        
+        // Sağ
+        rightBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.input.right = true;
+        });
+        rightBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            this.input.right = false;
+        });
+        rightBtn.addEventListener('mousedown', () => {
+            this.input.right = true;
+        });
+        rightBtn.addEventListener('mouseup', () => {
+            this.input.right = false;
+        });
+    }
+    
+    // ============================================================
     // SES SİSTEMİ
     // ============================================================
     initAudio() {
         try {
             this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         } catch (e) {
-            console.warn('Ses desteği yok');
+            console.warn('🔇 Ses desteği yok');
         }
     }
     
@@ -125,38 +287,57 @@ class Game {
                 case 'jump':
                     osc.frequency.value = 400;
                     gain.gain.value = 0.1;
+                    osc.type = 'sine';
                     osc.start();
                     osc.stop(this.audioContext.currentTime + 0.1);
                     break;
                 case 'collect':
                     osc.frequency.value = 600;
-                    gain.gain.value = 0.15;
+                    gain.gain.value = 0.12;
+                    osc.type = 'sine';
                     osc.start();
+                    setTimeout(() => { osc.frequency.value = 800; }, 50);
                     osc.stop(this.audioContext.currentTime + 0.15);
+                    break;
+                case 'gem':
+                    osc.frequency.value = 900;
+                    gain.gain.value = 0.12;
+                    osc.type = 'sine';
+                    osc.start();
+                    setTimeout(() => { osc.frequency.value = 1200; }, 80);
+                    osc.stop(this.audioContext.currentTime + 0.2);
                     break;
                 case 'damage':
                     osc.frequency.value = 150;
-                    gain.gain.value = 0.2;
+                    gain.gain.value = 0.15;
+                    osc.type = 'sawtooth';
                     osc.start();
                     osc.stop(this.audioContext.currentTime + 0.2);
                     break;
                 case 'complete':
-                    osc.frequency.value = 800;
-                    gain.gain.value = 0.15;
+                    osc.frequency.value = 500;
+                    gain.gain.value = 0.12;
+                    osc.type = 'sine';
                     osc.start();
-                    setTimeout(() => {
-                        osc.frequency.value = 1000;
-                    }, 100);
+                    setTimeout(() => { osc.frequency.value = 700; }, 100);
+                    setTimeout(() => { osc.frequency.value = 900; }, 200);
                     osc.stop(this.audioContext.currentTime + 0.3);
                     break;
                 case 'gameover':
+                    osc.frequency.value = 300;
+                    gain.gain.value = 0.15;
+                    osc.type = 'sawtooth';
+                    osc.start();
+                    setTimeout(() => { osc.frequency.value = 150; }, 200);
+                    setTimeout(() => { osc.frequency.value = 80; }, 400);
+                    osc.stop(this.audioContext.currentTime + 0.6);
+                    break;
+                case 'trap':
                     osc.frequency.value = 200;
                     gain.gain.value = 0.2;
+                    osc.type = 'square';
                     osc.start();
-                    setTimeout(() => {
-                        osc.frequency.value = 100;
-                    }, 200);
-                    osc.stop(this.audioContext.currentTime + 0.5);
+                    osc.stop(this.audioContext.currentTime + 0.15);
                     break;
             }
         } catch (e) {
@@ -168,106 +349,146 @@ class Game {
     // BÖLÜM ÜRETİCİ
     // ============================================================
     generateLevels() {
-        return [
-            // Bölüm 1 - Başlangıç
-            {
-                platforms: [
-                    { x: 0, y: 550, width: 200, height: 30 },
-                    { x: 250, y: 500, width: 150, height: 30 },
-                    { x: 450, y: 450, width: 150, height: 30 },
-                    { x: 650, y: 500, width: 200, height: 30 },
-                    { x: 900, y: 550, width: 300, height: 30 },
-                ],
-                gold: [
-                    { x: 280, y: 460 },
-                    { x: 490, y: 410 },
-                    { x: 700, y: 460 },
-                    { x: 950, y: 510 },
-                    { x: 1100, y: 510 },
-                ],
-                enemies: [
-                    { x: 400, y: 420, range: 100, speed: 1 },
-                    { x: 700, y: 470, range: 80, speed: 1.2 },
-                ],
-                exit: { x: 1150, y: 500 },
-                totalGold: 5
-            },
-            // Bölüm 2 - Orta
-            {
-                platforms: [
-                    { x: 0, y: 550, width: 150, height: 30 },
-                    { x: 200, y: 480, width: 120, height: 30 },
-                    { x: 370, y: 420, width: 120, height: 30 },
-                    { x: 540, y: 480, width: 120, height: 30 },
-                    { x: 710, y: 420, width: 120, height: 30 },
-                    { x: 880, y: 480, width: 120, height: 30 },
-                    { x: 1050, y: 550, width: 200, height: 30 },
-                    { x: 200, y: 350, width: 100, height: 20 },
-                    { x: 540, y: 350, width: 100, height: 20 },
-                    { x: 880, y: 350, width: 100, height: 20 },
-                ],
-                gold: [
-                    { x: 240, y: 440 },
-                    { x: 410, y: 380 },
-                    { x: 580, y: 440 },
-                    { x: 750, y: 380 },
-                    { x: 920, y: 440 },
-                    { x: 240, y: 310 },
-                    { x: 580, y: 310 },
-                    { x: 920, y: 310 },
-                ],
-                enemies: [
-                    { x: 300, y: 450, range: 120, speed: 1.5 },
-                    { x: 600, y: 450, range: 100, speed: 1.3 },
-                    { x: 900, y: 450, range: 80, speed: 1.8 },
-                ],
-                exit: { x: 1170, y: 500 },
-                totalGold: 8
-            },
-            // Bölüm 3 - Zor
-            {
-                platforms: [
-                    { x: 0, y: 550, width: 120, height: 30 },
-                    { x: 170, y: 480, width: 100, height: 30 },
-                    { x: 320, y: 410, width: 100, height: 30 },
-                    { x: 470, y: 480, width: 100, height: 30 },
-                    { x: 620, y: 410, width: 100, height: 30 },
-                    { x: 770, y: 480, width: 100, height: 30 },
-                    { x: 920, y: 410, width: 100, height: 30 },
-                    { x: 1070, y: 480, width: 100, height: 30 },
-                    { x: 1220, y: 550, width: 150, height: 30 },
-                    { x: 300, y: 330, width: 80, height: 20 },
-                    { x: 650, y: 330, width: 80, height: 20 },
-                    { x: 1000, y: 330, width: 80, height: 20 },
-                ],
-                gold: [
-                    { x: 210, y: 440 },
-                    { x: 360, y: 370 },
-                    { x: 510, y: 440 },
-                    { x: 660, y: 370 },
-                    { x: 810, y: 440 },
-                    { x: 960, y: 370 },
-                    { x: 1110, y: 440 },
-                    { x: 340, y: 290 },
-                    { x: 690, y: 290 },
-                    { x: 1040, y: 290 },
-                ],
-                enemies: [
-                    { x: 250, y: 450, range: 130, speed: 2 },
-                    { x: 500, y: 450, range: 110, speed: 1.8 },
-                    { x: 750, y: 450, range: 120, speed: 2.2 },
-                    { x: 1000, y: 450, range: 100, speed: 1.5 },
-                ],
-                exit: { x: 1300, y: 500 },
-                totalGold: 10
+        const levels = [];
+        
+        // 10 bölüm oluştur
+        for (let i = 0; i < 10; i++) {
+            const difficulty = Math.min(i + 1, 5);
+            const platformCount = 5 + i * 1;
+            const goldCount = 3 + i * 1;
+            const gemCount = Math.floor(i / 2) + 1;
+            const enemyCount = Math.min(2 + Math.floor(i / 2), 6);
+            const trapCount = Math.floor(i / 3);
+            
+            const platforms = [];
+            const golds = [];
+            const gems = [];
+            const enemies = [];
+            const traps = [];
+            
+            let xPos = 0;
+            let yPos = 450 - Math.random() * 50;
+            
+            // Platformlar
+            for (let p = 0; p < platformCount; p++) {
+                const width = 80 + Math.random() * 120;
+                const height = 20 + Math.random() * 10;
+                const x = xPos + (100 + Math.random() * 100);
+                const y = Math.max(200, Math.min(550, yPos + (Math.random() - 0.5) * 120));
+                
+                platforms.push({ x, y, width, height });
+                
+                xPos = x + width;
+                yPos = y;
             }
-        ];
+            
+            // Son platform (çıkış için)
+            const lastX = xPos + 100;
+            platforms.push({ x: lastX, y: 550, width: 150, height: 30 });
+            
+            // Altınlar
+            for (let g = 0; g < goldCount; g++) {
+                const platIndex = Math.floor(Math.random() * platforms.length);
+                const plat = platforms[platIndex];
+                if (plat) {
+                    golds.push({
+                        x: plat.x + 20 + Math.random() * (plat.width - 40),
+                        y: plat.y - 25 - Math.random() * 10,
+                        width: 18,
+                        height: 18,
+                        collected: false,
+                        bobPhase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+            
+            // Mücevherler (bonus)
+            for (let g = 0; g < gemCount; g++) {
+                const platIndex = Math.floor(Math.random() * platforms.length);
+                const plat = platforms[platIndex];
+                if (plat && platIndex > 0) {
+                    gems.push({
+                        x: plat.x + 10 + Math.random() * (plat.width - 20),
+                        y: plat.y - 35 - Math.random() * 15,
+                        width: 14,
+                        height: 14,
+                        collected: false,
+                        bobPhase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+            
+            // Düşmanlar
+            for (let e = 0; e < enemyCount; e++) {
+                const platIndex = Math.floor(Math.random() * Math.max(1, platforms.length - 1));
+                const plat = platforms[platIndex];
+                if (plat) {
+                    enemies.push({
+                        x: plat.x + 10 + Math.random() * (plat.width - 35),
+                        y: plat.y - 25,
+                        width: 28,
+                        height: 28,
+                        range: 60 + Math.random() * 80,
+                        speed: 0.8 + difficulty * 0.2 + Math.random() * 0.3,
+                        startX: plat.x + 10 + Math.random() * (plat.width - 35),
+                        direction: Math.random() > 0.5 ? 1 : -1,
+                        alive: true,
+                        type: Math.floor(Math.random() * 3)
+                    });
+                }
+            }
+            
+            // Tuzaklar
+            for (let t = 0; t < trapCount; t++) {
+                const platIndex = Math.floor(Math.random() * Math.max(1, platforms.length - 1));
+                const plat = platforms[platIndex];
+                if (plat) {
+                    traps.push({
+                        x: plat.x + 10 + Math.random() * (plat.width - 20),
+                        y: plat.y - 12,
+                        width: 20,
+                        height: 12,
+                        active: true,
+                        timer: 0,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+            
+            // Çıkış
+            const exitPlat = platforms[platforms.length - 1];
+            
+            levels.push({
+                platforms: platforms,
+                gold: golds,
+                gems: gems,
+                enemies: enemies,
+                traps: traps,
+                exit: {
+                    x: exitPlat.x + exitPlat.width / 2 - 20,
+                    y: exitPlat.y - 45,
+                    width: 40,
+                    height: 45
+                },
+                totalGold: goldCount,
+                totalGems: gemCount,
+                levelNumber: i + 1,
+                difficulty: difficulty
+            });
+        }
+        
+        return levels;
     }
     
     // ============================================================
     // BÖLÜM YÜKLEME
     // ============================================================
     loadLevel(levelIndex) {
+        if (levelIndex > this.maxLevel || levelIndex > this.levels.length) {
+            this.showLevelComplete();
+            return;
+        }
+        
         const level = this.levels[levelIndex - 1];
         if (!level) {
             this.showLevelComplete();
@@ -276,22 +497,29 @@ class Game {
         
         this.currentLevel = levelIndex;
         this.goldCollected = 0;
+        this.gemsCollected = 0;
         this.totalGold = level.totalGold;
         this.time = 0;
+        
+        const char = this.characters[this.selectedCharacter];
+        const speedMult = this.speedMultiplier / 3;
         
         // Oyuncu oluştur
         this.player = {
             x: 50,
             y: 500,
             width: 30,
-            height: 40,
+            height: 42,
             vx: 0,
             vy: 0,
             onGround: false,
             facing: 1,
             jumping: false,
-            speed: 5,
-            jumpPower: 12
+            speed: char.speed * speedMult,
+            jumpPower: char.jumpPower,
+            color: this.charColor,
+            character: this.selectedCharacter,
+            animTimer: 0
         };
         
         // Platformları kopyala
@@ -300,24 +528,29 @@ class Game {
         // Altınları kopyala
         this.goldItems = level.gold.map(g => ({
             ...g,
-            width: 20,
-            height: 20,
-            collected: false,
-            bobPhase: Math.random() * Math.PI * 2
+            collected: false
+        }));
+        
+        // Mücevherleri kopyala
+        this.gemItems = (level.gems || []).map(g => ({
+            ...g,
+            collected: false
         }));
         
         // Düşmanları kopyala
         this.enemies = level.enemies.map(e => ({
             ...e,
-            width: 25,
-            height: 25,
-            startX: e.x,
-            direction: 1,
             alive: true
         }));
         
+        // Tuzakları kopyala
+        this.traps = (level.traps || []).map(t => ({
+            ...t,
+            active: true
+        }));
+        
         // Çıkışı kopyala
-        this.exit = {...level.exit, width: 40, height: 40};
+        this.exit = {...level.exit};
         
         // Kamerayı sıfırla
         this.camera.x = 0;
@@ -335,31 +568,29 @@ class Game {
         document.getElementById('mainMenu').classList.remove('active');
         document.getElementById('settingsMenu').classList.remove('active');
         document.getElementById('howToPlayMenu').classList.remove('active');
+        document.getElementById('characterSelectMenu').classList.remove('active');
+        document.getElementById('leaderboardMenu').classList.remove('active');
         document.getElementById('pauseMenu').classList.remove('active');
         document.getElementById('levelComplete').classList.remove('active');
         document.getElementById('gameOver').classList.remove('active');
         
         this.playSound('collect');
+        console.log(`📊 Bölüm ${levelIndex} yüklendi - Zorluk: ${level.difficulty}`);
     }
     
     // ============================================================
     // OYUN DÖNGÜSÜ
     // ============================================================
     gameLoop(timestamp) {
-        // Delta time hesapla
         if (this.lastTime === 0) this.lastTime = timestamp;
         this.deltaTime = Math.min((timestamp - this.lastTime) / 16.667, 3);
         this.lastTime = timestamp;
         
-        // Oyunu güncelle
         if (this.state === 'playing') {
             this.update();
         }
         
-        // Render
         this.render();
-        
-        // Döngüyü devam ettir
         requestAnimationFrame(this.gameLoop);
     }
     
@@ -367,28 +598,15 @@ class Game {
     // OYUN GÜNCELLEME
     // ============================================================
     update() {
-        // Zamanı güncelle
         this.time += this.deltaTime * 0.06;
-        
-        // Oyuncu güncelle
         this.updatePlayer();
-        
-        // Altınları güncelle
         this.updateGold();
-        
-        // Düşmanları güncelle
+        this.updateGems();
         this.updateEnemies();
-        
-        // Partikülleri güncelle
+        this.updateTraps();
         this.updateParticles();
-        
-        // Çıkış kontrolü
         this.checkExit();
-        
-        // Kamerayı güncelle
         this.updateCamera();
-        
-        // HUD'ı güncelle
         this.updateHUD();
     }
     
@@ -397,7 +615,11 @@ class Game {
     // ============================================================
     updatePlayer() {
         const p = this.player;
-        const speed = p.speed * (1 + (this.difficulty === 'hard' ? 0.2 : 0));
+        if (!p) return;
+        
+        const speed = p.speed * (this.difficulty === 'hard' ? 1.15 : this.difficulty === 'nightmare' ? 1.3 : 1);
+        
+        p.animTimer += this.deltaTime * 0.1;
         
         // Yatay hareket
         if (this.input.left) {
@@ -417,7 +639,7 @@ class Game {
             p.onGround = false;
             p.jumping = true;
             this.playSound('jump');
-            this.spawnParticles(p.x + p.width/2, p.y + p.height, '#ff6b6b', 8);
+            this.spawnParticles(p.x + p.width/2, p.y + p.height, p.color, 8);
         }
         
         // Yerçekimi
@@ -434,14 +656,15 @@ class Game {
         
         // Ekran sınırları
         if (p.x < 0) p.x = 0;
-        if (p.x > 2000) p.x = 2000;
+        if (p.x > 2500) p.x = 2500;
         
         // Düşme kontrolü
-        if (p.y > 700) {
-            this.takeDamage(100);
+        if (p.y > 750) {
+            this.takeDamage(50);
+            p.y = 100;
+            p.vy = 0;
         }
         
-        // Zıplama flag'i
         if (p.onGround) {
             p.jumping = false;
         }
@@ -482,15 +705,14 @@ class Game {
     // ============================================================
     updateGold() {
         const p = this.player;
+        if (!p) return;
         
         for (const gold of this.goldItems) {
             if (gold.collected) continue;
             
-            // Altın animasyonu
             gold.bobPhase += 0.05;
             const bobY = Math.sin(gold.bobPhase) * 3;
             
-            // Çarpışma kontrolü
             if (p.x + p.width > gold.x + 2 &&
                 p.x < gold.x + gold.width - 2 &&
                 p.y + p.height > gold.y + bobY + 2 &&
@@ -498,9 +720,37 @@ class Game {
                 
                 gold.collected = true;
                 this.goldCollected++;
-                this.score += 10 + (this.difficulty === 'hard' ? 5 : 0);
+                const points = 10 + (this.difficulty === 'hard' ? 5 : this.difficulty === 'nightmare' ? 8 : 0);
+                this.score += points;
                 this.playSound('collect');
                 this.spawnParticles(gold.x + gold.width/2, gold.y + gold.height/2, '#ffd93d', 15);
+            }
+        }
+    }
+    
+    // ============================================================
+    // MÜCEVHER TOPLAMA (BONUS)
+    // ============================================================
+    updateGems() {
+        const p = this.player;
+        if (!p) return;
+        
+        for (const gem of this.gemItems) {
+            if (gem.collected) continue;
+            
+            gem.bobPhase += 0.07;
+            const bobY = Math.sin(gem.bobPhase) * 4;
+            
+            if (p.x + p.width > gem.x + 2 &&
+                p.x < gem.x + gem.width - 2 &&
+                p.y + p.height > gem.y + bobY + 2 &&
+                p.y < gem.y + bobY + gem.height - 2) {
+                
+                gem.collected = true;
+                this.gemsCollected++;
+                this.score += 25 + (this.difficulty === 'hard' ? 10 : this.difficulty === 'nightmare' ? 15 : 0);
+                this.playSound('gem');
+                this.spawnParticles(gem.x + gem.width/2, gem.y + gem.height/2, '#4d96ff', 20);
             }
         }
     }
@@ -510,11 +760,11 @@ class Game {
     // ============================================================
     updateEnemies() {
         const p = this.player;
+        if (!p) return;
         
         for (const enemy of this.enemies) {
             if (!enemy.alive) continue;
             
-            // Düşman hareketi
             enemy.x += enemy.direction * enemy.speed * this.deltaTime;
             
             if (enemy.x > enemy.startX + enemy.range) {
@@ -529,16 +779,44 @@ class Game {
                 p.y + p.height > enemy.y + 2 &&
                 p.y < enemy.y + enemy.height - 2) {
                 
-                // Üstten vurma
-                if (p.vy > 0 && p.y + p.height - enemy.y < 20) {
+                if (p.vy > 0 && p.y + p.height - enemy.y < 25) {
                     enemy.alive = false;
                     this.score += 20;
                     this.playSound('collect');
                     this.spawnParticles(enemy.x + enemy.width/2, enemy.y + enemy.height/2, '#6bcb77', 20);
-                    p.vy = -8;
+                    p.vy = -10;
                 } else {
-                    this.takeDamage(20);
+                    this.takeDamage(15);
                 }
+            }
+        }
+    }
+    
+    // ============================================================
+    // TUZAKLAR
+    // ============================================================
+    updateTraps() {
+        const p = this.player;
+        if (!p) return;
+        
+        for (const trap of this.traps) {
+            if (!trap.active) continue;
+            
+            trap.phase += 0.04 * this.deltaTime;
+            const flameHeight = 5 + Math.sin(trap.phase) * 8;
+            
+            // Tuzak çarpışması
+            if (p.x + p.width > trap.x + 2 &&
+                p.x < trap.x + trap.width - 2 &&
+                p.y + p.height > trap.y - flameHeight + 2 &&
+                p.y < trap.y + trap.height - 2) {
+                
+                this.takeDamage(10);
+                this.playSound('trap');
+                trap.active = false;
+                setTimeout(() => {
+                    trap.active = true;
+                }, 2000);
             }
         }
     }
@@ -556,8 +834,8 @@ class Game {
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed - 2,
                 life: 1,
-                decay: 0.015 + Math.random() * 0.02,
-                radius: 3 + Math.random() * 4,
+                decay: 0.015 + Math.random() * 0.025,
+                radius: 3 + Math.random() * 5,
                 color: color
             });
         }
@@ -582,6 +860,8 @@ class Game {
     // ============================================================
     checkExit() {
         const p = this.player;
+        if (!p || !this.exit) return;
+        
         const e = this.exit;
         
         if (p.x + p.width > e.x + 2 &&
@@ -589,14 +869,29 @@ class Game {
             p.y + p.height > e.y + 2 &&
             p.y < e.y + e.height - 2) {
             
-            // Tüm altınlar toplandı mı?
             if (this.goldCollected >= this.totalGold) {
                 this.showLevelComplete();
             } else {
-                // Eksik altın var, uyarı
                 this.spawnParticles(e.x + e.width/2, e.y, '#ff6b6b', 10);
+                // Uyarı mesajı
+                this.showFloatingText(e.x, e.y - 20, '⚠️ Tüm altınları topla!', '#ff6b6b');
             }
         }
+    }
+    
+    showFloatingText(x, y, text, color) {
+        this.particles.push({
+            x: x,
+            y: y,
+            vx: 0,
+            vy: -1,
+            life: 1.5,
+            decay: 0.008,
+            radius: 0,
+            color: color,
+            text: text,
+            isText: true
+        });
     }
     
     // ============================================================
@@ -604,13 +899,14 @@ class Game {
     // ============================================================
     updateCamera() {
         const p = this.player;
+        if (!p) return;
+        
         const targetX = p.x - this.canvas.width * 0.35;
         const targetY = p.y - this.canvas.height * 0.4;
         
         this.camera.x += (targetX - this.camera.x) * 0.08;
         this.camera.y += (targetY - this.camera.y) * 0.08;
         
-        // Kamera sınırları
         this.camera.x = Math.max(0, this.camera.x);
         this.camera.y = Math.max(0, this.camera.y);
     }
@@ -621,7 +917,10 @@ class Game {
     takeDamage(amount) {
         this.health -= amount;
         this.playSound('damage');
-        this.spawnParticles(this.player.x + this.player.width/2, this.player.y + this.player.height/2, '#ff6b6b', 15);
+        const p = this.player;
+        if (p) {
+            this.spawnParticles(p.x + p.width/2, p.y + p.height/2, '#ff6b6b', 15);
+        }
         
         if (this.health <= 0) {
             this.health = 0;
@@ -637,8 +936,14 @@ class Game {
     updateHUD() {
         document.getElementById('healthDisplay').textContent = Math.max(0, Math.round(this.health));
         document.getElementById('scoreDisplay').textContent = this.score;
-        document.getElementById('levelDisplay').textContent = `Bölüm ${this.currentLevel}`;
-        document.getElementById('objectiveDisplay').textContent = `Altınları Topla: ${this.goldCollected}/${this.totalGold}`;
+        document.getElementById('gemDisplay').textContent = this.gemsCollected;
+        document.getElementById('levelDisplay').textContent = `📊 Bölüm ${this.currentLevel}`;
+        document.getElementById('objectiveDisplay').textContent = `🎯 Altın: ${this.goldCollected}/${this.totalGold}`;
+        
+        // Süre
+        const mins = Math.floor(this.time / 60);
+        const secs = Math.floor(this.time % 60);
+        document.getElementById('timerDisplay').textContent = `⏱️ ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
     
     // ============================================================
@@ -650,10 +955,11 @@ class Game {
         const h = this.canvas.height;
         
         // Arka plan
+        const bgColors = this.backgrounds[this.currentBg] || this.backgrounds.default;
         const gradient = ctx.createLinearGradient(0, 0, 0, h);
-        gradient.addColorStop(0, '#0a0a2e');
-        gradient.addColorStop(0.5, '#1a1a4e');
-        gradient.addColorStop(1, '#2a1a3e');
+        gradient.addColorStop(0, bgColors[0]);
+        gradient.addColorStop(0.5, bgColors[1]);
+        gradient.addColorStop(1, bgColors[2]);
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, w, h);
         
@@ -670,14 +976,41 @@ class Game {
             grad.addColorStop(0, '#4a4a8a');
             grad.addColorStop(1, '#2a2a5a');
             ctx.fillStyle = grad;
-            ctx.shadowColor = 'rgba(74, 74, 138, 0.5)';
-            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(74, 74, 138, 0.3)';
+            ctx.shadowBlur = 10;
             ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
             ctx.shadowBlur = 0;
             
             // Platform üst çizgisi
-            ctx.fillStyle = 'rgba(100, 100, 200, 0.3)';
+            ctx.fillStyle = 'rgba(100, 100, 200, 0.25)';
             ctx.fillRect(plat.x, plat.y, plat.width, 3);
+            
+            // Platform deseni
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+            for (let i = 0; i < plat.width; i += 20) {
+                ctx.fillRect(plat.x + i, plat.y + 5, 2, 5);
+            }
+        }
+        
+        // Tuzaklar
+        for (const trap of this.traps) {
+            if (!trap.active) continue;
+            const flameHeight = 5 + Math.sin(trap.phase) * 8;
+            
+            // Alev efekti
+            const grad = ctx.createLinearGradient(trap.x, trap.y, trap.x, trap.y - flameHeight);
+            grad.addColorStop(0, 'rgba(255, 100, 0, 0.8)');
+            grad.addColorStop(0.5, 'rgba(255, 200, 0, 0.6)');
+            grad.addColorStop(1, 'rgba(255, 100, 0, 0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(trap.x, trap.y);
+            ctx.quadraticCurveTo(trap.x + trap.width/2, trap.y - flameHeight, trap.x + trap.width, trap.y);
+            ctx.fill();
+            
+            // Tuzak tabanı
+            ctx.fillStyle = '#8a4a3a';
+            ctx.fillRect(trap.x, trap.y, trap.width, trap.height);
         }
         
         // Altınlar
@@ -685,7 +1018,6 @@ class Game {
             if (gold.collected) continue;
             const bobY = Math.sin(gold.bobPhase) * 3;
             
-            // Parlama efekti
             ctx.shadowColor = '#ffd93d';
             ctx.shadowBlur = 20;
             ctx.fillStyle = '#ffd93d';
@@ -701,16 +1033,48 @@ class Game {
             ctx.fill();
         }
         
+        // Mücevherler
+        for (const gem of this.gemItems) {
+            if (gem.collected) continue;
+            const bobY = Math.sin(gem.bobPhase) * 4;
+            
+            ctx.shadowColor = '#4d96ff';
+            ctx.shadowBlur = 25;
+            ctx.fillStyle = '#4d96ff';
+            ctx.beginPath();
+            // Elmas şekli
+            ctx.moveTo(gem.x + gem.width/2, gem.y + bobY);
+            ctx.lineTo(gem.x + gem.width, gem.y + gem.height/2 + bobY);
+            ctx.lineTo(gem.x + gem.width/2, gem.y + gem.height + bobY);
+            ctx.lineTo(gem.x, gem.y + gem.height/2 + bobY);
+            ctx.closePath();
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // İç parlaklık
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.beginPath();
+            ctx.moveTo(gem.x + gem.width/2, gem.y + 3 + bobY);
+            ctx.lineTo(gem.x + gem.width/2 + 4, gem.y + gem.height/2 + bobY);
+            ctx.lineTo(gem.x + gem.width/2, gem.y + gem.height - 3 + bobY);
+            ctx.lineTo(gem.x + gem.width/2 - 4, gem.y + gem.height/2 + bobY);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
         // Düşmanlar
         for (const enemy of this.enemies) {
             if (!enemy.alive) continue;
+            
+            const colors = ['#ff6b6b', '#ff6b3a', '#ff3a6b'];
+            const color = colors[enemy.type % colors.length];
             
             // Düşman gövdesi
             const grad = ctx.createRadialGradient(
                 enemy.x + enemy.width/2, enemy.y + enemy.height/2, 5,
                 enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2
             );
-            grad.addColorStop(0, '#ff6b6b');
+            grad.addColorStop(0, color);
             grad.addColorStop(1, '#cc0000');
             ctx.fillStyle = grad;
             ctx.shadowColor = 'rgba(255, 0, 0, 0.3)';
@@ -723,51 +1087,65 @@ class Game {
             // Gözler
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.arc(enemy.x + enemy.width/2 - 5 + enemy.direction * 2, enemy.y + enemy.height/2 - 4, 5, 0, Math.PI * 2);
+            ctx.arc(enemy.x + enemy.width/2 - 6 + enemy.direction * 2, enemy.y + enemy.height/2 - 4, 5, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(enemy.x + enemy.width/2 + 5 + enemy.direction * 2, enemy.y + enemy.height/2 - 4, 5, 0, Math.PI * 2);
+            ctx.arc(enemy.x + enemy.width/2 + 6 + enemy.direction * 2, enemy.y + enemy.height/2 - 4, 5, 0, Math.PI * 2);
             ctx.fill();
             
             ctx.fillStyle = '#1a1a2e';
             ctx.beginPath();
-            ctx.arc(enemy.x + enemy.width/2 - 3 + enemy.direction * 4, enemy.y + enemy.height/2 - 2, 2.5, 0, Math.PI * 2);
+            ctx.arc(enemy.x + enemy.width/2 - 4 + enemy.direction * 4, enemy.y + enemy.height/2 - 2, 2.5, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(enemy.x + enemy.width/2 + 7 + enemy.direction * 4, enemy.y + enemy.height/2 - 2, 2.5, 0, Math.PI * 2);
+            ctx.arc(enemy.x + enemy.width/2 + 8 + enemy.direction * 4, enemy.y + enemy.height/2 - 2, 2.5, 0, Math.PI * 2);
             ctx.fill();
+            
+            // Ağız
+            ctx.strokeStyle = '#1a1a2e';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(enemy.x + enemy.width/2, enemy.y + enemy.height/2 + 6, 5, 0, Math.PI);
+            ctx.stroke();
         }
         
         // Çıkış
         if (this.exit) {
             // Işık hüzmesi
             ctx.save();
-            ctx.globalAlpha = 0.2 + Math.sin(this.time * 2) * 0.1;
+            ctx.globalAlpha = 0.15 + Math.sin(this.time * 2) * 0.05;
             const grad2 = ctx.createRadialGradient(
-                this.exit.x + this.exit.width/2, this.exit.y, 10,
-                this.exit.x + this.exit.width/2, this.exit.y, 60
+                this.exit.x + this.exit.width/2, this.exit.y + this.exit.height/2, 10,
+                this.exit.x + this.exit.width/2, this.exit.y + this.exit.height/2, 70
             );
-            grad2.addColorStop(0, 'rgba(100, 200, 255, 0.5)');
+            grad2.addColorStop(0, 'rgba(100, 200, 255, 0.8)');
             grad2.addColorStop(1, 'rgba(100, 200, 255, 0)');
             ctx.fillStyle = grad2;
-            ctx.fillRect(this.exit.x - 40, this.exit.y - 40, this.exit.width + 80, this.exit.height + 80);
+            ctx.fillRect(this.exit.x - 50, this.exit.y - 50, this.exit.width + 100, this.exit.height + 100);
             ctx.restore();
             
             // Kapı
             ctx.fillStyle = '#4d96ff';
-            ctx.shadowColor = 'rgba(77, 150, 255, 0.3)';
-            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(77, 150, 255, 0.4)';
+            ctx.shadowBlur = 25;
             ctx.fillRect(this.exit.x, this.exit.y, this.exit.width, this.exit.height);
             ctx.shadowBlur = 0;
             
-            // Kapı detayları
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.fillRect(this.exit.x + 10, this.exit.y + 10, 8, 20);
-            ctx.fillRect(this.exit.x + this.exit.width - 18, this.exit.y + 10, 8, 20);
+            // Kapı detayları - kemer
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.beginPath();
+            ctx.arc(this.exit.x + this.exit.width/2, this.exit.y, this.exit.width/2, Math.PI, 0);
+            ctx.fill();
             
-            // Işık
-            ctx.fillStyle = 'rgba(100, 200, 255, 0.2)';
-            ctx.fillRect(this.exit.x + 15, this.exit.y - 20, 10, 20);
+            // Kapı kolu
+            ctx.fillStyle = '#ffd93d';
+            ctx.beginPath();
+            ctx.arc(this.exit.x + this.exit.width - 10, this.exit.y + this.exit.height/2, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Işık sütunu
+            ctx.fillStyle = 'rgba(100, 200, 255, 0.08)';
+            ctx.fillRect(this.exit.x + 10, this.exit.y - 30, this.exit.width - 20, 30);
         }
         
         // Oyuncu
@@ -780,13 +1158,14 @@ class Game {
             ctx.ellipse(p.x + p.width/2, p.y + p.height + 5, p.width/2 + 5, 5, 0, 0, Math.PI * 2);
             ctx.fill();
             
-            // Gövde
+            // Karakter gövdesi
             const grad3 = ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.height);
-            grad3.addColorStop(0, '#6bcb77');
-            grad3.addColorStop(1, '#2d8a4e');
+            const baseColor = p.color || '#6bcb77';
+            grad3.addColorStop(0, baseColor);
+            grad3.addColorStop(1, this.darkenColor(baseColor, 0.5));
             ctx.fillStyle = grad3;
-            ctx.shadowColor = 'rgba(107, 203, 119, 0.3)';
-            ctx.shadowBlur = 10;
+            ctx.shadowColor = baseColor + '40';
+            ctx.shadowBlur = 15;
             
             // Yuvarlak gövde
             const radius = 8;
@@ -802,6 +1181,13 @@ class Game {
             ctx.quadraticCurveTo(p.x, p.y, p.x + radius, p.y);
             ctx.fill();
             ctx.shadowBlur = 0;
+            
+            // Karakter emojisi (üzerinde)
+            ctx.font = '18px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const charEmoji = this.characters[p.character]?.emoji || '⚔️';
+            ctx.fillText(charEmoji, p.x + p.width/2, p.y + p.height/2 - 2);
             
             // Gözler
             ctx.fillStyle = '#ffffff';
@@ -838,37 +1224,55 @@ class Game {
         // Partiküller
         for (const p of this.particles) {
             ctx.globalAlpha = p.life;
-            ctx.fillStyle = p.color;
-            ctx.shadowColor = p.color;
-            ctx.shadowBlur = 10;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.radius * p.life, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
+            if (p.isText) {
+                ctx.fillStyle = p.color;
+                ctx.font = '16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(p.text, p.x, p.y);
+            } else {
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius * p.life, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
         }
         ctx.globalAlpha = 1;
         
         ctx.restore();
         
-        // Altın toplama bilgisi
+        // Altın toplama bilgisi (ekran üstü)
         if (this.state === 'playing' && this.goldCollected < this.totalGold) {
             const remaining = this.totalGold - this.goldCollected;
-            ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.7)';
             ctx.font = '14px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`⭐ Kalan Altın: ${remaining}`, this.canvas.width / 2, this.canvas.height - 30);
+            ctx.fillText(`⭐ Kalan Altın: ${remaining}`, this.canvas.width / 2, this.canvas.height - 50);
         }
     }
     
+    darkenColor(color, factor) {
+        // Basit renk koyulaştırma
+        const hex = color.replace('#', '');
+        let r = parseInt(hex.substring(0, 2), 16);
+        let g = parseInt(hex.substring(2, 4), 16);
+        let b = parseInt(hex.substring(4, 6), 16);
+        r = Math.floor(r * factor);
+        g = Math.floor(g * factor);
+        b = Math.floor(b * factor);
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
+    
     renderStars(ctx) {
-        // Yıldızlar sabit (kamera hareketinden etkilenmez)
         const starCount = 60;
-        const seed = 12345;
         for (let i = 0; i < starCount; i++) {
             const x = ((i * 137.508) % this.canvas.width);
             const y = ((i * 269.361) % (this.canvas.height * 0.7));
             const size = ((i * 73) % 3) + 1;
-            const alpha = 0.3 + ((i * 43) % 7) / 10;
+            const alpha = 0.2 + ((i * 43) % 7) / 10;
             ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
             ctx.beginPath();
             ctx.arc(x, y, size, 0, Math.PI * 2);
@@ -896,6 +1300,11 @@ class Game {
             document.getElementById('howToPlayMenu').classList.add('active');
         });
         
+        document.getElementById('leaderboardBtn').addEventListener('click', () => {
+            document.getElementById('mainMenu').classList.remove('active');
+            document.getElementById('leaderboardMenu').classList.add('active');
+        });
+        
         // Ayarlar
         document.getElementById('settingsBackBtn').addEventListener('click', () => {
             document.getElementById('settingsMenu').classList.remove('active');
@@ -912,11 +1321,34 @@ class Game {
         
         document.getElementById('difficultySelect').addEventListener('change', (e) => {
             this.difficulty = e.target.value;
+            console.log(`📊 Zorluk değiştirildi: ${this.difficulty}`);
+        });
+        
+        document.getElementById('charColorPicker').addEventListener('input', (e) => {
+            this.charColor = e.target.value;
+            if (this.player) {
+                this.player.color = this.charColor;
+            }
+        });
+        
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            this.speedMultiplier = parseInt(e.target.value);
+            document.getElementById('speedValue').textContent = this.speedMultiplier;
+            if (this.player) {
+                const char = this.characters[this.selectedCharacter];
+                this.player.speed = char.speed * (this.speedMultiplier / 3);
+            }
         });
         
         // Nasıl Oynanır
         document.getElementById('howToPlayBackBtn').addEventListener('click', () => {
             document.getElementById('howToPlayMenu').classList.remove('active');
+            document.getElementById('mainMenu').classList.add('active');
+        });
+        
+        // Skor Tablosu
+        document.getElementById('leaderboardBackBtn').addEventListener('click', () => {
+            document.getElementById('leaderboardMenu').classList.remove('active');
             document.getElementById('mainMenu').classList.add('active');
         });
         
@@ -945,6 +1377,9 @@ class Game {
         document.getElementById('nextLevelBtn').addEventListener('click', () => {
             document.getElementById('levelComplete').classList.remove('active');
             this.currentLevel++;
+            if (this.currentLevel > this.maxLevel) {
+                this.currentLevel = 1;
+            }
             this.loadLevel(this.currentLevel);
         });
         
@@ -1025,61 +1460,6 @@ class Game {
                     break;
             }
         });
-        
-        // Mobil dokunmatik kontroller (basit)
-        let touchX = 0;
-        let touchY = 0;
-        let touchActive = false;
-        
-        this.canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = this.canvas.getBoundingClientRect();
-            touchX = touch.clientX - rect.left;
-            touchY = touch.clientY - rect.top;
-            touchActive = true;
-            
-            // Ekranın sol yarısı sol, sağ yarısı sağ, yukarısı zıplama
-            if (touchY < rect.height * 0.4) {
-                this.input.jump = true;
-            } else if (touchX < rect.width * 0.4) {
-                this.input.left = true;
-            } else if (touchX > rect.width * 0.6) {
-                this.input.right = true;
-            }
-        });
-        
-        this.canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = this.canvas.getBoundingClientRect();
-            const newX = touch.clientX - rect.left;
-            const newY = touch.clientY - rect.top;
-            
-            // Sürükleyerek kontrol
-            const dx = newX - touchX;
-            const dy = newY - touchY;
-            
-            if (Math.abs(dx) > 20) {
-                this.input.left = dx < 0;
-                this.input.right = dx > 0;
-            }
-            
-            if (dy < -20) {
-                this.input.jump = true;
-            }
-            
-            touchX = newX;
-            touchY = newY;
-        });
-        
-        this.canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            touchActive = false;
-            this.input.left = false;
-            this.input.right = false;
-            this.input.jump = false;
-        });
     }
     
     // ============================================================
@@ -1100,16 +1480,19 @@ class Game {
         this.playSound('complete');
         document.getElementById('finalScore').textContent = this.score;
         document.getElementById('finalGold').textContent = this.goldCollected;
+        document.getElementById('finalGems').textContent = this.gemsCollected;
         document.getElementById('finalTime').textContent = Math.round(this.time);
+        document.getElementById('finalLevel').textContent = this.currentLevel;
         document.getElementById('levelComplete').classList.add('active');
         
-        // Altın patlaması
-        for (let i = 0; i < 30; i++) {
+        // Zafer partikülleri
+        for (let i = 0; i < 50; i++) {
+            const colors = ['#ffd93d', '#ff6b6b', '#6bcb77', '#4d96ff', '#ff6bff'];
             this.spawnParticles(
-                this.exit.x + this.exit.width/2,
-                this.exit.y + this.exit.height/2,
-                ['#ffd93d', '#ff6b6b', '#6bcb77', '#4d96ff'][Math.floor(Math.random() * 4)],
-                5
+                this.exit.x + this.exit.width/2 + (Math.random() - 0.5) * 100,
+                this.exit.y + this.exit.height/2 + (Math.random() - 0.5) * 100,
+                colors[Math.floor(Math.random() * colors.length)],
+                3
             );
         }
     }
@@ -1118,6 +1501,7 @@ class Game {
         this.state = 'gameOver';
         this.playSound('gameover');
         document.getElementById('gameOverScore').textContent = this.score;
+        document.getElementById('gameOverGold').textContent = this.goldCollected;
         document.getElementById('gameOverLevel').textContent = this.currentLevel;
         document.getElementById('gameOver').classList.add('active');
     }
@@ -1127,6 +1511,7 @@ class Game {
         this.health = this.maxHealth;
         this.currentLevel = 1;
         this.goldCollected = 0;
+        this.gemsCollected = 0;
         this.time = 0;
         this.particles = [];
     }
@@ -1139,10 +1524,8 @@ const game = new Game();
 
 // Hata yakalama
 window.addEventListener('error', (e) => {
-    console.error('Oyun hatası:', e.message);
+    console.error('❌ Oyun hatası:', e.message);
 });
 
-// PWA için service worker kaydı (isteğe bağlı)
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-                                     }
+console.log('🎮 MYMAR oyunu başarıyla yüklendi!');
+console.log('📖 Nasıl oynanır menüsünden kontrolleri öğrenebilirsiniz.');
