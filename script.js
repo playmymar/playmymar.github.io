@@ -1,7 +1,7 @@
 /**
  * MYMAR - Profesyonel Macera Oyunu
- * @version 3.0
- * @description 50 Bölüm - 10 Boss - 6 Karakter - Save Sistemi
+ * @version 4.0
+ * @description 50 Bölüm - 10 Boss - 6 Karakter - Mağaza - Mini-Map - İsim Sistemi
  * @author AI Assistant
  */
 
@@ -15,6 +15,8 @@ class Game {
         // ======================================================
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
+        this.miniMapCanvas = document.getElementById('miniMapCanvas');
+        this.miniMapCtx = this.miniMapCanvas.getContext('2d');
 
         // ======================================================
         // OYUN DURUMU
@@ -42,6 +44,14 @@ class Game {
         this.isBossLevel = false;
         this.bossDefeated = false;
         this.autoSave = true;
+        this.playerName = 'İsimsiz';
+        this.isNameSet = false;
+        this.gems = 0;
+        this.ownedItems = [];
+        this.activeSkin = null;
+        this.activeTrail = null;
+        this.bossIntroActive = false;
+        this.bossIntroTimer = 0;
 
         // ======================================================
         // SAVE SİSTEMİ
@@ -55,7 +65,12 @@ class Game {
             totalGems: 0,
             totalKills: 0,
             maxCombo: 0,
-            lastPlayed: null
+            lastPlayed: null,
+            playerName: 'İsimsiz',
+            gems: 0,
+            ownedItems: [],
+            activeSkin: null,
+            activeTrail: null
         };
 
         // ======================================================
@@ -87,6 +102,7 @@ class Game {
         this.boss = null;
         this.bossAttacks = [];
         this.savePoints = [];
+        this.trailParticles = [];
 
         // ======================================================
         // KAMERA
@@ -101,6 +117,19 @@ class Game {
             shake: 0,
             shakeX: 0,
             shakeY: 0
+        };
+
+        // ======================================================
+        // MİNİ-MAP
+        // ======================================================
+        this.miniMap = {
+            visible: true,
+            dragStartX: 0,
+            dragStartY: 0,
+            isDragging: false,
+            offsetX: 0,
+            offsetY: 0,
+            scale: 0.15
         };
 
         // ======================================================
@@ -131,7 +160,7 @@ class Game {
         this.coyoteTimer = 0;
 
         // ======================================================
-        // KARAKTER ÖZELLİKLERİ (6 KARAKTER)
+        // KARAKTER ÖZELLİKLERİ
         // ======================================================
         this.characters = {
             warrior: {
@@ -197,7 +226,21 @@ class Game {
         };
 
         // ======================================================
-        // ARKA PLAN TEMALARI (8 TEMA)
+        // MAĞAZA ÜRÜNLERİ
+        // ======================================================
+        this.shopItems = {
+            'skin_warrior_gold': { name: 'Altın Savaşçı', price: 50, type: 'skin', emoji: '⚔️', character: 'warrior' },
+            'skin_mage_dark': { name: 'Karanlık Büyücü', price: 75, type: 'skin', emoji: '🧙', character: 'mage' },
+            'skin_rogue_shadow': { name: 'Gölge Haydut', price: 60, type: 'skin', emoji: '🗡️', character: 'rogue' },
+            'skin_archer_elite': { name: 'Elit Okçu', price: 80, type: 'skin', emoji: '🏹', character: 'archer' },
+            'skin_knight_royal': { name: 'Kraliyet Şövalyesi', price: 100, type: 'skin', emoji: '🛡️', character: 'knight' },
+            'skin_ninja_void': { name: 'Void Ninja', price: 90, type: 'skin', emoji: '🥷', character: 'ninja' },
+            'trail_fire': { name: 'Ateş İzi', price: 30, type: 'trail', emoji: '🔥' },
+            'trail_star': { name: 'Yıldız İzi', price: 40, type: 'trail', emoji: '✨' }
+        };
+
+        // ======================================================
+        // ARKA PLAN TEMALARI
         // ======================================================
         this.backgrounds = {
             default: ['#0a0a2e', '#1a1a4e', '#2a1a3e'],
@@ -277,6 +320,9 @@ class Game {
         // Kayıtlı oyunu yükle
         this.loadGame();
 
+        // İsim kontrolü
+        this.checkPlayerName();
+
         // Bölümleri oluştur
         this.levels = this.generateLevels();
         console.log(`📊 ${this.levels.length} bölüm oluşturuldu`);
@@ -284,6 +330,9 @@ class Game {
         // Canvas boyutlandırma
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
+
+        // Mini-map
+        this.setupMiniMap();
 
         // Klavye olayları
         this.setupKeyboard();
@@ -306,6 +355,9 @@ class Game {
         // Zorluk seçimi
         this.setupDifficultySelect();
 
+        // Mağaza
+        this.setupShop();
+
         // Otomatik kayıt
         this.setupAutoSave();
 
@@ -314,10 +366,65 @@ class Game {
         requestAnimationFrame(this.gameLoop);
 
         console.log('✅ MYMAR Oyunu başlatıldı!');
-        console.log(`🎮 Seçili Karakter: ${this.characters[this.selectedCharacter].name}`);
+        console.log(`👤 Oyuncu: ${this.playerName}`);
+        console.log(`🎮 Karakter: ${this.characters[this.selectedCharacter].name}`);
         console.log(`📊 Zorluk: ${this.difficulty}`);
+        console.log(`💎 Elmas: ${this.gems}`);
         console.log(`💾 Kayıt: Bölüm ${this.saveData.level}, Puan ${this.saveData.score}`);
         console.log('📖 Nasıl oynanır menüsünden kontrolleri öğrenebilirsiniz.');
+    }
+
+    // ============================================================
+    // İSİM SİSTEMİ
+    // ============================================================
+    checkPlayerName() {
+        const savedName = localStorage.getItem('mymar_player_name');
+        if (savedName) {
+            this.playerName = savedName;
+            this.isNameSet = true;
+            document.getElementById('playerNameDisplay').textContent = `👤 ${this.playerName}`;
+            console.log(`👤 İsim yüklendi: ${this.playerName}`);
+        } else {
+            // İsim girme ekranını göster
+            document.getElementById('nameScreen').classList.add('active');
+            document.getElementById('mainMenu').classList.remove('active');
+            console.log('📝 İsim girişi bekleniyor...');
+        }
+    }
+
+    setupNameSystem() {
+        const nameInput = document.getElementById('playerNameInput');
+        const confirmBtn = document.getElementById('nameConfirmBtn');
+
+        confirmBtn.addEventListener('click', () => {
+            const name = nameInput.value.trim();
+            if (name.length >= 2) {
+                this.playerName = name;
+                this.isNameSet = true;
+                localStorage.setItem('mymar_player_name', name);
+                document.getElementById('playerNameDisplay').textContent = `👤 ${name}`;
+                document.getElementById('nameScreen').classList.remove('active');
+                document.getElementById('mainMenu').classList.add('active');
+                this.saveGame();
+                console.log(`✅ İsim kaydedildi: ${name}`);
+            } else {
+                nameInput.style.borderColor = '#ff4444';
+                nameInput.placeholder = '❌ En az 2 karakter girin!';
+                setTimeout(() => {
+                    nameInput.style.borderColor = 'rgba(255,255,255,0.1)';
+                    nameInput.placeholder = 'Kahraman Adı...';
+                }, 2000);
+            }
+        });
+
+        nameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                confirmBtn.click();
+            }
+        });
+
+        // Enter tuşu ile onay
+        nameInput.focus();
     }
 
     // ============================================================
@@ -336,8 +443,17 @@ class Game {
             this.saveData.totalKills = this.totalKills;
             this.saveData.maxCombo = this.maxCombo;
             this.saveData.lastPlayed = new Date().toISOString();
+            this.saveData.playerName = this.playerName;
+            this.saveData.gems = this.gems;
+            this.saveData.ownedItems = this.ownedItems;
+            this.saveData.activeSkin = this.activeSkin;
+            this.saveData.activeTrail = this.activeTrail;
 
             localStorage.setItem('mymar_save', JSON.stringify(this.saveData));
+            localStorage.setItem('mymar_player_name', this.playerName);
+
+            // Güncelleme
+            document.getElementById('playerCurrencyDisplay').textContent = `💎 ${this.gems}`;
             console.log('💾 Oyun kaydedildi');
         } catch (e) {
             console.warn('⚠️ Kayıt başarısız:', e);
@@ -358,7 +474,16 @@ class Game {
                 this.totalGemsCollected = data.totalGems || 0;
                 this.totalKills = data.totalKills || 0;
                 this.maxCombo = data.maxCombo || 0;
-                console.log(`💾 Kayıt yüklendi: Bölüm ${this.currentLevel}`);
+                this.gems = data.gems || 0;
+                this.ownedItems = data.ownedItems || [];
+                this.activeSkin = data.activeSkin || null;
+                this.activeTrail = data.activeTrail || null;
+                this.playerName = data.playerName || 'İsimsiz';
+
+                // Mağazayı güncelle
+                this.updateShopUI();
+
+                console.log(`💾 Kayıt yüklendi: Bölüm ${this.currentLevel}, 💎 ${this.gems} elmas`);
             }
         } catch (e) {
             console.warn('⚠️ Kayıt yüklenemedi');
@@ -368,6 +493,7 @@ class Game {
     deleteSave() {
         try {
             localStorage.removeItem('mymar_save');
+            localStorage.removeItem('mymar_player_name');
             this.saveData = {
                 level: 1,
                 score: 0,
@@ -377,14 +503,118 @@ class Game {
                 totalGems: 0,
                 totalKills: 0,
                 maxCombo: 0,
-                lastPlayed: null
+                lastPlayed: null,
+                playerName: 'İsimsiz',
+                gems: 0,
+                ownedItems: [],
+                activeSkin: null,
+                activeTrail: null
             };
             this.currentLevel = 1;
             this.score = 0;
+            this.gems = 0;
+            this.ownedItems = [];
+            this.activeSkin = null;
+            this.activeTrail = null;
             console.log('🗑️ Kayıt silindi');
+            location.reload();
         } catch (e) {
             console.warn('⚠️ Kayıt silinemedi');
         }
+    }
+
+    // ============================================================
+    // MAĞAZA SİSTEMİ
+    // ============================================================
+    setupShop() {
+        const shopBtn = document.getElementById('shopBtn');
+        const shopBackBtn = document.getElementById('shopBackBtn');
+        const shopMenu = document.getElementById('shopMenu');
+
+        shopBtn.addEventListener('click', () => {
+            document.getElementById('mainMenu').classList.remove('active');
+            shopMenu.classList.add('active');
+            this.updateShopUI();
+        });
+
+        shopBackBtn.addEventListener('click', () => {
+            shopMenu.classList.remove('active');
+            document.getElementById('mainMenu').classList.add('active');
+        });
+
+        // Satın alma butonları
+        document.querySelectorAll('.shop-buy-btn').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                const itemId = btn.dataset.item;
+                const price = parseInt(btn.dataset.price);
+                this.buyItem(itemId, price);
+            });
+        });
+    }
+
+    updateShopUI() {
+        document.getElementById('shopGems').textContent = this.gems;
+
+        document.querySelectorAll('.shop-item').forEach((item) => {
+            const itemId = item.dataset.item;
+            const btn = item.querySelector('.shop-buy-btn');
+            const ownedLabel = item.querySelector('.shop-owned');
+
+            if (this.ownedItems.includes(itemId)) {
+                item.classList.add('owned');
+                if (ownedLabel) ownedLabel.style.display = 'block';
+                if (btn) btn.disabled = true;
+                btn.textContent = '✅ Sahipsin';
+            } else {
+                item.classList.remove('owned');
+                if (ownedLabel) ownedLabel.style.display = 'none';
+                if (btn) {
+                    btn.disabled = false;
+                    const price = parseInt(btn.dataset.price);
+                    btn.textContent = `💎 ${price} Satın Al`;
+                    if (this.gems < price) {
+                        btn.style.opacity = '0.5';
+                    } else {
+                        btn.style.opacity = '1';
+                    }
+                }
+            }
+        });
+    }
+
+    buyItem(itemId, price) {
+        if (this.ownedItems.includes(itemId)) {
+            this.addFloatingText(0, 0, 'Zaten sahipsin!', '#ffd93d');
+            return;
+        }
+
+        if (this.gems < price) {
+            this.addFloatingText(0, 0, '⚠️ Yeterli elmas yok!', '#ff4444');
+            return;
+        }
+
+        // Satın al
+        this.gems -= price;
+        this.ownedItems.push(itemId);
+
+        // Skin ise aktif et
+        const item = this.shopItems[itemId];
+        if (item.type === 'skin') {
+            this.activeSkin = itemId;
+            // Karakter rengini güncelle
+            this.charColor = this.characters[item.character].color;
+            document.getElementById('charColorPicker').value = this.charColor;
+            if (this.player) {
+                this.player.color = this.charColor;
+            }
+        } else if (item.type === 'trail') {
+            this.activeTrail = itemId;
+        }
+
+        this.saveGame();
+        this.updateShopUI();
+        this.addFloatingText(0, 0, `✅ ${item.name} satın alındı!`, '#6bcb77');
+        console.log(`🛒 ${item.name} satın alındı!`);
     }
 
     // ============================================================
@@ -397,6 +627,187 @@ class Game {
         this.camera.height = this.canvas.height;
         this.camera.targetX = 0;
         this.camera.targetY = 0;
+
+        // Mini-map boyutlandırma
+        const miniMapEl = document.getElementById('miniMap');
+        if (window.innerWidth < 480) {
+            this.miniMapCanvas.width = 200;
+            this.miniMapCanvas.height = 60;
+        } else if (window.innerWidth < 768) {
+            this.miniMapCanvas.width = 250;
+            this.miniMapCanvas.height = 70;
+        } else {
+            this.miniMapCanvas.width = 300;
+            this.miniMapCanvas.height = 80;
+        }
+    }
+
+    // ============================================================
+    // MİNİ-MAP
+    // ============================================================
+    setupMiniMap() {
+        const miniMapEl = document.getElementById('miniMap');
+
+        // Dokunmatik kaydırma
+        miniMapEl.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            this.miniMap.isDragging = true;
+            this.miniMap.dragStartX = touch.clientX;
+            this.miniMap.dragStartY = touch.clientY;
+        });
+
+        miniMapEl.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!this.miniMap.isDragging) return;
+            const touch = e.touches[0];
+            const dx = touch.clientX - this.miniMap.dragStartX;
+            const dy = touch.clientY - this.miniMap.dragStartY;
+            this.miniMap.offsetX += dx;
+            this.miniMap.offsetY += dy;
+            this.miniMap.dragStartX = touch.clientX;
+            this.miniMap.dragStartY = touch.clientY;
+
+            // Sınırlar
+            const level = this.levels[this.currentLevel - 1];
+            if (level) {
+                const maxOffset = level.width * this.miniMap.scale - this.miniMapCanvas.width;
+                this.miniMap.offsetX = Math.max(-maxOffset, Math.min(0, this.miniMap.offsetX));
+            }
+        });
+
+        miniMapEl.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            this.miniMap.isDragging = false;
+        });
+
+        // Fare ile kaydırma
+        miniMapEl.addEventListener('mousedown', (e) => {
+            this.miniMap.isDragging = true;
+            this.miniMap.dragStartX = e.clientX;
+            this.miniMap.dragStartY = e.clientY;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!this.miniMap.isDragging) return;
+            const dx = e.clientX - this.miniMap.dragStartX;
+            const dy = e.clientY - this.miniMap.dragStartY;
+            this.miniMap.offsetX += dx;
+            this.miniMap.offsetY += dy;
+            this.miniMap.dragStartX = e.clientX;
+            this.miniMap.dragStartY = e.clientY;
+
+            const level = this.levels[this.currentLevel - 1];
+            if (level) {
+                const maxOffset = level.width * this.miniMap.scale - this.miniMapCanvas.width;
+                this.miniMap.offsetX = Math.max(-maxOffset, Math.min(0, this.miniMap.offsetX));
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            this.miniMap.isDragging = false;
+        });
+
+        // Mini-map'i göster
+        miniMapEl.style.display = 'block';
+        this.miniMap.visible = true;
+    }
+
+    renderMiniMap() {
+        const ctx = this.miniMapCtx;
+        const w = this.miniMapCanvas.width;
+        const h = this.miniMapCanvas.height;
+
+        // Arka plan
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, w, h);
+
+        const level = this.levels[this.currentLevel - 1];
+        if (!level) return;
+
+        const scale = this.miniMap.scale;
+        const offsetX = this.miniMap.offsetX;
+        const offsetY = this.miniMap.offsetY;
+
+        ctx.save();
+        ctx.translate(offsetX, offsetY);
+
+        // Platformlar
+        ctx.fillStyle = 'rgba(100, 100, 200, 0.3)';
+        for (const plat of level.platforms) {
+            ctx.fillRect(plat.x * scale, plat.y * scale, plat.width * scale, plat.height * scale);
+        }
+
+        // Altınlar
+        for (const gold of this.goldItems) {
+            if (gold.collected) continue;
+            ctx.fillStyle = '#ffd93d';
+            ctx.beginPath();
+            ctx.arc((gold.x + gold.width / 2) * scale, (gold.y + gold.height / 2) * scale, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Mücevherler
+        for (const gem of this.gemItems) {
+            if (gem.collected) continue;
+            ctx.fillStyle = '#4d96ff';
+            ctx.fillRect(gem.x * scale, gem.y * scale, gem.width * scale, gem.height * scale);
+        }
+
+        // Düşmanlar
+        for (const enemy of this.enemies) {
+            if (!enemy.alive) continue;
+            ctx.fillStyle = '#ff4444';
+            ctx.fillRect(enemy.x * scale, enemy.y * scale, enemy.width * scale, enemy.height * scale);
+        }
+
+        // Boss
+        if (this.boss && this.boss.alive) {
+            ctx.fillStyle = '#ff0044';
+            ctx.shadowColor = '#ff0044';
+            ctx.shadowBlur = 10;
+            ctx.fillRect(this.boss.x * scale, this.boss.y * scale, this.boss.width * scale, this.boss.height * scale);
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('👾', (this.boss.x + this.boss.width / 2) * scale, (this.boss.y + this.boss.height / 2) * scale + 4);
+        }
+
+        // Çıkış
+        if (this.exit) {
+            ctx.fillStyle = '#4d96ff';
+            ctx.fillRect(this.exit.x * scale, this.exit.y * scale, this.exit.width * scale, this.exit.height * scale);
+        }
+
+        // Oyuncu (kırmızı daire)
+        if (this.player) {
+            const p = this.player;
+            ctx.fillStyle = '#ff6b6b';
+            ctx.shadowColor = '#ff6b6b';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc((p.x + p.width / 2) * scale, (p.y + p.height / 2) * scale, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Görüş alanı (kamera)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(
+                (this.camera.x) * scale,
+                (this.camera.y) * scale,
+                this.camera.width * scale,
+                this.camera.height * scale
+            );
+        }
+
+        ctx.restore();
+
+        // Border
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(0, 0, w, h);
     }
 
     // ============================================================
@@ -416,7 +827,25 @@ class Game {
                 const parent = btn.closest('.character-card');
                 if (parent) parent.classList.add('selected');
 
-                this.charColor = this.characters[char].color;
+                // Skin kontrolü
+                const skinId = `skin_${char}`;
+                const skinVariants = Object.keys(this.shopItems).filter(
+                    id => this.shopItems[id].type === 'skin' && this.shopItems[id].character === char
+                );
+
+                let useDefault = true;
+                for (const skin of skinVariants) {
+                    if (this.ownedItems.includes(skin) && this.activeSkin === skin) {
+                        this.charColor = this.characters[char].color;
+                        useDefault = false;
+                        break;
+                    }
+                }
+
+                if (useDefault) {
+                    this.charColor = this.characters[char].color;
+                }
+
                 document.getElementById('charColorPicker').value = this.charColor;
 
                 if (this.player) {
@@ -474,6 +903,18 @@ class Game {
             this.difficulty = e.target.value;
             const settings = this.difficultySettings[this.difficulty];
             diffDesc.textContent = settings.description;
+
+            // Zor ve Kabus'ta hız sabit
+            if (this.difficulty === 'hard' || this.difficulty === 'nightmare') {
+                document.getElementById('speedSlider').disabled = true;
+                document.getElementById('speedValue').textContent = '3 (Sabit)';
+                this.speedMultiplier = 3;
+            } else {
+                document.getElementById('speedSlider').disabled = false;
+                this.speedMultiplier = parseInt(document.getElementById('speedSlider').value);
+                document.getElementById('speedValue').textContent = this.speedMultiplier;
+            }
+
             this.saveGame();
             console.log(`📊 Zorluk değiştirildi: ${this.difficulty}`);
         });
@@ -691,6 +1132,17 @@ class Game {
                     osc.stop(this.audioContext.currentTime + 0.5);
                     break;
 
+                case 'boss_intro':
+                    osc.frequency.setValueAtTime(200, this.audioContext.currentTime);
+                    osc.frequency.setValueAtTime(400, this.audioContext.currentTime + 0.2);
+                    osc.frequency.setValueAtTime(600, this.audioContext.currentTime + 0.4);
+                    gain.gain.setValueAtTime(0.15, this.audioContext.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.5);
+                    osc.type = 'square';
+                    osc.start();
+                    osc.stop(this.audioContext.currentTime + 0.5);
+                    break;
+
                 default:
                     osc.frequency.setValueAtTime(500, this.audioContext.currentTime);
                     gain.gain.setValueAtTime(0.1, this.audioContext.currentTime);
@@ -741,7 +1193,7 @@ class Game {
                 yPos = y;
             }
 
-            // Boss platformu (daha geniş)
+            // Boss platformu
             if (isBoss) {
                 const bossPlatX = xPos + 50;
                 platforms.push({
@@ -797,7 +1249,7 @@ class Game {
                 }
             }
 
-            // Düşmanlar - Boss hariç
+            // Düşmanlar
             if (!isBoss) {
                 const diffSettings = this.difficultySettings[this.difficulty] || this.difficultySettings.normal;
                 const enemySpeedMult = diffSettings.enemySpeed;
@@ -835,7 +1287,7 @@ class Game {
                 }
             }
 
-            // Tuzaklar - Boss hariç
+            // Tuzaklar
             if (!isBoss) {
                 const diffSettings = this.difficultySettings[this.difficulty] || this.difficultySettings.normal;
                 const trapDamage = diffSettings.trapDamage;
@@ -881,7 +1333,7 @@ class Game {
             // Çıkış
             const exitPlat = platforms[platforms.length - 1];
 
-            // Boss oluştur
+            // Boss
             let bossData = null;
             if (isBoss) {
                 const bossIndex = Math.floor(i / 10);
@@ -966,6 +1418,8 @@ class Game {
         this.totalGold = level.totalGold;
         this.time = 0;
         this.comboCount = 0;
+        this.bossIntroActive = false;
+        this.bossIntroTimer = 0;
 
         const char = this.characters[this.selectedCharacter];
         const speedMult = this.speedMultiplier / 3;
@@ -1005,7 +1459,8 @@ class Game {
             shield: false,
             shieldTimer: 0,
             speedBoost: false,
-            speedBoostTimer: 0
+            speedBoostTimer: 0,
+            trailTimer: 0
         };
 
         this.health = this.player.health;
@@ -1024,8 +1479,9 @@ class Game {
         this.projectiles = [];
         this.floatingTexts = [];
         this.particles = [];
+        this.trailParticles = [];
 
-        // Boss can çubuğunu göster/gizle
+        // Boss can çubuğu
         const bossHealthBar = document.getElementById('bossHealthBar');
         const bossIndicator = document.getElementById('bossIndicator');
 
@@ -1033,10 +1489,17 @@ class Game {
             bossHealthBar.style.display = 'block';
             bossIndicator.style.display = 'flex';
             this.updateBossHealth();
+
+            // Boss giriş animasyonu
+            this.showBossIntro();
         } else {
             bossHealthBar.style.display = 'none';
             bossIndicator.style.display = 'none';
         }
+
+        // Mini-map sıfırla
+        this.miniMap.offsetX = 0;
+        this.miniMap.offsetY = 0;
 
         // Kamera
         this.camera.x = 0;
@@ -1056,17 +1519,41 @@ class Game {
         document.getElementById('howToPlayMenu').classList.remove('active');
         document.getElementById('characterSelectMenu').classList.remove('active');
         document.getElementById('leaderboardMenu').classList.remove('active');
+        document.getElementById('shopMenu').classList.remove('active');
         document.getElementById('pauseMenu').classList.remove('active');
         document.getElementById('levelComplete').classList.remove('active');
         document.getElementById('gameOver').classList.remove('active');
         document.getElementById('bossDefeated').classList.remove('active');
+        document.getElementById('bossIntro').classList.remove('active');
 
         this.playSound('collect');
         console.log(`✅ Bölüm ${levelIndex} yüklendi! Altın: ${this.totalGold}`);
     }
 
     // ============================================================
-    // BOSS SAĞLIĞI GÜNCELLEME
+    // BOSS GİRİŞ ANİMASYONU
+    // ============================================================
+    showBossIntro() {
+        if (!this.boss) return;
+
+        this.bossIntroActive = true;
+        this.bossIntroTimer = 0;
+        const introEl = document.getElementById('bossIntro');
+        const nameEl = document.getElementById('bossIntroName');
+
+        nameEl.textContent = `👾 ${this.boss.name}`;
+        introEl.classList.add('active');
+        this.playSound('boss_intro');
+
+        // 2 saniye sonra kapat
+        setTimeout(() => {
+            introEl.classList.remove('active');
+            this.bossIntroActive = false;
+        }, 2500);
+    }
+
+    // ============================================================
+    // BOSS SAĞLIĞI
     // ============================================================
     updateBossHealth() {
         if (!this.boss) return;
@@ -1147,20 +1634,24 @@ class Game {
         this.updateTraps();
         this.updatePowerups();
         this.updateParticles();
+        this.updateTrailParticles();
         this.updateFloatingTexts();
 
-        // Boss güncelle
+        // Boss
         if (this.isBossLevel && this.boss && this.boss.alive) {
             this.updateBoss();
             this.updateBossAttacks();
-            this.updateProjectiles();
+            this.checkBossCollision();
         }
 
         this.checkExit();
         this.updateCamera();
         this.updateHUD();
 
-        // Otomatik kayıt (her 30 saniyede bir)
+        // Mini-map
+        this.renderMiniMap();
+
+        // Otomatik kayıt (her 30 saniye)
         if (this.autoSave && Math.floor(this.time) % 30 === 0 && this.time > 0) {
             this.saveGame();
         }
@@ -1187,7 +1678,7 @@ class Game {
             p.groundedTimer += this.deltaTime * 0.06;
         }
 
-        // Hız hesapla
+        // Hız
         let speed = p.speed;
         if (p.speedBoost) speed *= 1.5;
         if (this.difficulty === 'hard') speed *= 0.85;
@@ -1271,6 +1762,23 @@ class Game {
         if (p.onGround) {
             p.jumping = false;
             p.canDoubleJump = true;
+        }
+
+        // İz efekti
+        if (this.activeTrail && (p.onGround || p.vx !== 0)) {
+            p.trailTimer += this.deltaTime * 0.06;
+            if (p.trailTimer > 0.05) {
+                p.trailTimer = 0;
+                const trailColor = this.activeTrail === 'trail_fire' ? '#ff6600' : '#ffd93d';
+                this.trailParticles.push({
+                    x: p.x + p.width / 2,
+                    y: p.y + p.height / 2,
+                    color: trailColor,
+                    life: 0.5,
+                    radius: 4,
+                    decay: 0.03
+                });
+            }
         }
 
         // Ekran sınırları
@@ -1376,11 +1884,13 @@ class Game {
                 gem.collected = true;
                 this.gemsCollected++;
                 this.totalGemsCollected++;
+                this.gems += 1; // Elmas kazan
 
                 this.score += 25;
                 this.playSound('gem');
                 this.spawnParticles(gem.x + gem.width / 2, gem.y + gem.height / 2, '#4d96ff', 25);
-                this.addFloatingText(gem.x, gem.y - 25, '+25 💎', '#4d96ff');
+                this.addFloatingText(gem.x, gem.y - 25, '+25 💎 +1💎', '#4d96ff');
+                this.saveGame();
             }
         }
     }
@@ -1417,7 +1927,6 @@ class Game {
                     enemy.direction = -1;
                 }
 
-                // Hızlanarak kovala
                 const chaseSpeed = enemy.speed * (1 + Math.min(enemy.chaseTimer * 0.1, 0.5));
                 enemy.x += enemy.direction * chaseSpeed * this.deltaTime;
 
@@ -1482,7 +1991,6 @@ class Game {
                 }
             }
 
-            // Hasar timer
             if (enemy.hitTimer > 0) {
                 enemy.hitTimer -= this.deltaTime * 0.06;
             }
@@ -1579,6 +2087,7 @@ class Game {
     // ============================================================
     updateBoss() {
         if (!this.boss || !this.boss.alive) return;
+        if (this.bossIntroActive) return;
 
         const boss = this.boss;
         const p = this.player;
@@ -1586,7 +2095,6 @@ class Game {
 
         const diffSettings = this.difficultySettings[this.difficulty] || this.difficultySettings.normal;
 
-        // Boss can çubuğu
         this.updateBossHealth();
 
         // Boss hareketi
@@ -1602,9 +2110,8 @@ class Game {
             boss.attackType = Math.floor(Math.random() * 3);
             boss.attackTimer = 0;
 
-            // Saldırı tipine göre
             switch (boss.attackType) {
-                case 0: // Yakın saldırı
+                case 0:
                     if (dist < 150) {
                         if (!p.invincible) {
                             const damage = (boss.damage || 15) * diffSettings.bossHealth;
@@ -1617,7 +2124,7 @@ class Game {
                     this.spawnParticles(boss.x + boss.width / 2, boss.y + boss.height / 2, '#ff4444', 30);
                     break;
 
-                case 1: // Uzaktan saldırı (mermi)
+                case 1:
                     this.bossAttacks.push({
                         x: boss.x + boss.width / 2,
                         y: boss.y + 20,
@@ -1630,7 +2137,7 @@ class Game {
                     });
                     break;
 
-                case 2: // AOE patlama
+                case 2:
                     const explosionRange = 120;
                     if (dist < explosionRange && !p.invincible) {
                         const damage = 20 * diffSettings.bossHealth;
@@ -1655,7 +2162,7 @@ class Game {
             this.playSound('boss_hit');
         }
 
-        // Boss hareketi (oyuncuyu takip et)
+        // Boss hareketi
         if (dist > 50) {
             const moveSpeed = boss.speed * (1 + Math.min(this.currentLevel * 0.01, 1));
             if (dx > 0) {
@@ -1673,12 +2180,11 @@ class Game {
         boss.x = Math.max(50, Math.min(boss.x, levelWidth - boss.width - 50));
         boss.y = Math.max(300, Math.min(boss.y, 500));
 
-        // Boss hasar alınca
         if (boss.hitTimer > 0) {
             boss.hitTimer -= this.deltaTime * 0.06;
         }
 
-        // Boss faz değişimi
+        // Faz değişimi
         const healthPercent = boss.health / boss.maxHealth;
         if (healthPercent < 0.5 && boss.phase === 0) {
             boss.phase = 1;
@@ -1712,7 +2218,6 @@ class Game {
                 continue;
             }
 
-            // Oyuncuya çarpma
             const p = this.player;
             if (p) {
                 const dx = p.x + p.width / 2 - attack.x;
@@ -1729,10 +2234,62 @@ class Game {
     }
 
     // ============================================================
-    // PROJELTİLER (Oyuncu saldırıları için)
+    // BOSS ÇARPIŞMASI
     // ============================================================
-    updateProjectiles() {
-        // Gelecek özellik
+    checkBossCollision() {
+        if (!this.boss || !this.boss.alive) return;
+        if (this.bossIntroActive) return;
+
+        const p = this.player;
+        if (!p) return;
+
+        const boss = this.boss;
+
+        if (p.x + p.width > boss.x + 5 &&
+            p.x < boss.x + boss.width - 5 &&
+            p.y + p.height > boss.y + 5 &&
+            p.y < boss.y + boss.height - 5) {
+
+            if (p.vy > 0 && p.y + p.height - boss.y < 30 && !p.isDashing) {
+                const damage = p.damage || 1;
+                boss.health -= damage * 5;
+                boss.hitTimer = 0.3;
+                this.shakeCamera(6);
+                this.playSound('boss_hit');
+                this.spawnParticles(boss.x + boss.width / 2, boss.y + boss.height / 2, '#ffd93d', 20);
+                p.vy = -10;
+
+                if (boss.health <= 0) {
+                    boss.alive = false;
+                    this.bossDefeated = true;
+                    this.score += 100 + this.currentLevel * 5;
+                    this.gems += 10;
+                    this.playSound('boss_defeated');
+
+                    for (let i = 0; i < 80; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = Math.random() * 150;
+                        this.spawnParticles(
+                            boss.x + boss.width / 2 + Math.cos(angle) * dist,
+                            boss.y + boss.height / 2 + Math.sin(angle) * dist,
+                            ['#ffd93d', '#ff6b6b', '#4d96ff', '#6bcb77', '#ff6bff'][Math.floor(Math.random() * 5)],
+                            3
+                        );
+                    }
+
+                    this.addFloatingText(boss.x, boss.y - 50, '👾 BOSS YENİLDİ! +10💎', '#ffd93d');
+                    this.saveGame();
+                    this.showBossDefeated();
+                }
+            } else if (!p.invincible && !p.isDashing) {
+                const damage = (boss.damage || 15) *
+                    (this.difficultySettings[this.difficulty]?.bossHealth || 1);
+                this.takeDamage(damage);
+                p.vx = p.facing * -10;
+                p.vy = -8;
+                this.shakeCamera(10);
+            }
+        }
     }
 
     // ============================================================
@@ -1774,6 +2331,21 @@ class Game {
     }
 
     // ============================================================
+    // İZ PARTİKÜLLERİ
+    // ============================================================
+    updateTrailParticles() {
+        for (let i = this.trailParticles.length - 1; i >= 0; i--) {
+            const p = this.trailParticles[i];
+            p.life -= p.decay;
+            p.radius *= 0.98;
+
+            if (p.life <= 0 || p.radius < 0.5) {
+                this.trailParticles.splice(i, 1);
+            }
+        }
+    }
+
+    // ============================================================
     // YÜZEN YAZILAR
     // ============================================================
     addFloatingText(x, y, text, color) {
@@ -1807,7 +2379,6 @@ class Game {
         const p = this.player;
         if (!p || !this.exit) return;
 
-        // Boss kontrolü
         if (this.isBossLevel && this.boss && this.boss.alive) {
             return;
         }
@@ -1833,63 +2404,6 @@ class Game {
     }
 
     // ============================================================
-    // BOSS ÇARPIŞMASI
-    // ============================================================
-    checkBossCollision() {
-        if (!this.boss || !this.boss.alive) return;
-        const p = this.player;
-        if (!p) return;
-
-        const boss = this.boss;
-
-        if (p.x + p.width > boss.x + 5 &&
-            p.x < boss.x + boss.width - 5 &&
-            p.y + p.height > boss.y + 5 &&
-            p.y < boss.y + boss.height - 5) {
-
-            if (p.vy > 0 && p.y + p.height - boss.y < 30 && !p.isDashing) {
-                // Boss'a hasar ver
-                const damage = p.damage || 1;
-                boss.health -= damage * 5;
-                boss.hitTimer = 0.3;
-                this.shakeCamera(6);
-                this.playSound('boss_hit');
-                this.spawnParticles(boss.x + boss.width / 2, boss.y + boss.height / 2, '#ffd93d', 20);
-                p.vy = -10;
-
-                if (boss.health <= 0) {
-                    boss.alive = false;
-                    this.bossDefeated = true;
-                    this.score += 100 + this.currentLevel * 5;
-                    this.playSound('boss_defeated');
-
-                    // Büyük patlama
-                    for (let i = 0; i < 80; i++) {
-                        const angle = Math.random() * Math.PI * 2;
-                        const dist = Math.random() * 150;
-                        this.spawnParticles(
-                            boss.x + boss.width / 2 + Math.cos(angle) * dist,
-                            boss.y + boss.height / 2 + Math.sin(angle) * dist,
-                            ['#ffd93d', '#ff6b6b', '#4d96ff', '#6bcb77', '#ff6bff'][Math.floor(Math.random() * 5)],
-                            3
-                        );
-                    }
-
-                    this.addFloatingText(boss.x, boss.y - 50, '👾 BOSS YENİLDİ!', '#ffd93d');
-                    this.showBossDefeated();
-                }
-            } else if (!p.invincible && !p.isDashing) {
-                const damage = (boss.damage || 15) *
-                    (this.difficultySettings[this.difficulty]?.bossHealth || 1);
-                this.takeDamage(damage);
-                p.vx = p.facing * -10;
-                p.vy = -8;
-                this.shakeCamera(10);
-            }
-        }
-    }
-
-    // ============================================================
     // KAMERA
     // ============================================================
     updateCamera() {
@@ -1899,7 +2413,6 @@ class Game {
         let targetX = p.x - this.canvas.width * 0.35;
         let targetY = p.y - this.canvas.height * 0.4;
 
-        // Boss için kamera ayarı
         if (this.isBossLevel && this.boss && this.boss.alive) {
             const midX = (p.x + this.boss.x) / 2;
             targetX = midX - this.canvas.width * 0.45;
@@ -2021,7 +2534,6 @@ class Game {
                 ctx.fillRect(plat.x + i, plat.y + 6, 2, 6);
             }
 
-            // Boss platformu vurgusu
             if (plat.isBoss) {
                 ctx.strokeStyle = 'rgba(255, 0, 0, 0.2)';
                 ctx.lineWidth = 2;
@@ -2194,7 +2706,6 @@ class Game {
             ctx.arc(enemy.x + enemy.width / 2 + 8 + enemy.direction * 4, enemy.y + enemy.height / 2 - 2, 2.5, 0, Math.PI * 2);
             ctx.fill();
 
-            // Ağız
             ctx.strokeStyle = '#1a1a2e';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
@@ -2213,7 +2724,6 @@ class Game {
                 ctx.fillRect(barX, barY, barWidth * (enemy.health / enemy.maxHealth), barHeight);
             }
 
-            // Kovalama göstergesi
             if (enemy.isChasing) {
                 ctx.fillStyle = 'rgba(255, 0, 0, 0.15)';
                 ctx.beginPath();
@@ -2322,7 +2832,6 @@ class Game {
                 ctx.fill();
                 ctx.shadowBlur = 0;
 
-                // Parlak çekirdek
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
                 ctx.beginPath();
                 ctx.arc(attack.x - 3, attack.y - 3, attack.radius * 0.4, 0, Math.PI * 2);
@@ -2335,7 +2844,6 @@ class Game {
             const isComplete = this.goldCollected >= this.totalGold;
             const pulse = 0.8 + Math.sin(this.time * 3) * 0.2;
 
-            // Boss kontrolü
             const bossAlive = this.isBossLevel && this.boss && this.boss.alive;
 
             ctx.save();
@@ -2443,11 +2951,20 @@ class Game {
             }
 
             // Karakter emojisi
+            let emoji = this.characters[p.character]?.emoji || '⚔️';
+
+            // Skin kontrolü
+            if (this.activeSkin) {
+                const skinItem = this.shopItems[this.activeSkin];
+                if (skinItem && skinItem.type === 'skin') {
+                    emoji = skinItem.emoji;
+                }
+            }
+
             ctx.font = '20px sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            const charEmoji = this.characters[p.character]?.emoji || '⚔️';
-            ctx.fillText(charEmoji, p.x + p.width / 2, p.y + p.height / 2 - 2);
+            ctx.fillText(emoji, p.x + p.width / 2, p.y + p.height / 2 - 2);
 
             // Gözler
             if (!isInvincible) {
@@ -2487,7 +3004,6 @@ class Game {
                 ctx.arc(p.x + p.width / 2, p.y + p.height / 2, p.width + 6, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Dash izleri
                 for (let i = 1; i <= 3; i++) {
                     const alpha = 0.1 - i * 0.03;
                     ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
@@ -2495,6 +3011,19 @@ class Game {
                 }
             }
         }
+
+        // İz partikülleri
+        for (const tp of this.trailParticles) {
+            ctx.globalAlpha = tp.life;
+            ctx.fillStyle = tp.color;
+            ctx.shadowColor = tp.color;
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(tp.x, tp.y, tp.radius * tp.life, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+        ctx.globalAlpha = 1;
 
         // Partiküller
         for (const p of this.particles) {
@@ -2546,7 +3075,6 @@ class Game {
                 ctx.fillText(`🔥 ${this.comboCount}x Combo!`, this.canvas.width - 20, this.canvas.height - 15);
             }
 
-            // Bölüm bilgisi
             const levelInfo = this.isBossLevel ? '👾 BOSS SAVAŞI' : `📊 Bölüm ${this.currentLevel}/${this.maxLevel}`;
             ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
             ctx.font = '12px sans-serif';
@@ -2593,6 +3121,9 @@ class Game {
     // UI OLAYLARI
     // ============================================================
     setupUI() {
+        // İsim sistemi
+        this.setupNameSystem();
+
         // Ana Menü
         document.getElementById('startGameBtn').addEventListener('click', () => {
             this.resetGame();
@@ -2641,11 +3172,20 @@ class Game {
         });
 
         document.getElementById('speedSlider').addEventListener('input', (e) => {
+            if (this.difficulty === 'hard' || this.difficulty === 'nightmare') {
+                return;
+            }
             this.speedMultiplier = parseInt(e.target.value);
             document.getElementById('speedValue').textContent = this.speedMultiplier;
             if (this.player) {
                 const char = this.characters[this.selectedCharacter];
                 this.player.speed = char.speed * (this.speedMultiplier / 3);
+            }
+        });
+
+        document.getElementById('deleteSaveBtn').addEventListener('click', () => {
+            if (confirm('Tüm kayıtlarınız silinecek. Devam etmek istediğinize emin misiniz?')) {
+                this.deleteSave();
             }
         });
 
@@ -2826,7 +3366,6 @@ class Game {
         document.getElementById('finalLevel').textContent = this.currentLevel;
         document.getElementById('levelComplete').classList.add('active');
 
-        // Zafer patlaması
         for (let i = 0; i < 80; i++) {
             const colors = ['#ffd93d', '#ff6b6b', '#6bcb77', '#4d96ff', '#ff6bff', '#ff9f43'];
             const angle = Math.random() * Math.PI * 2;
@@ -2847,7 +3386,6 @@ class Game {
         document.getElementById('bossGems').textContent = this.gemsCollected;
         document.getElementById('bossDefeated').classList.add('active');
 
-        // Boss patlaması
         for (let i = 0; i < 120; i++) {
             const colors = ['#ffd93d', '#ff6b6b', '#4d96ff', '#6bcb77', '#ff6bff', '#ff9f43', '#ff4444'];
             const angle = Math.random() * Math.PI * 2;
@@ -2881,7 +3419,6 @@ class Game {
         document.getElementById('finalLevel').textContent = '🏆 TAMAMLANDI!';
         document.getElementById('levelComplete').classList.add('active');
 
-        // Büyük zafer patlaması
         for (let i = 0; i < 150; i++) {
             const colors = ['#ffd93d', '#ff6b6b', '#6bcb77', '#4d96ff', '#ff6bff', '#ff9f43'];
             const angle = Math.random() * Math.PI * 2;
@@ -2891,7 +3428,6 @@ class Game {
             this.spawnParticles(x, y, colors[Math.floor(Math.random() * colors.length)], 3);
         }
 
-        // Sonraki bölüm butonunu değiştir
         document.getElementById('nextLevelBtn').textContent = '🎮 Tekrar Oyna';
         document.getElementById('nextLevelBtn').onclick = () => {
             document.getElementById('levelComplete').classList.remove('active');
@@ -2909,6 +3445,7 @@ class Game {
         this.gemsCollected = 0;
         this.time = 0;
         this.particles = [];
+        this.trailParticles = [];
         this.comboCount = 0;
         this.maxCombo = 0;
         this.totalKills = 0;
@@ -2919,6 +3456,7 @@ class Game {
         this.bossAttacks = [];
         this.bossDefeated = false;
         this.isBossLevel = false;
+        this.bossIntroActive = false;
     }
 }
 
@@ -2934,5 +3472,5 @@ window.addEventListener('error', (e) => {
 
 console.log('🎮 MYMAR oyunu başarıyla yüklendi!');
 console.log('📖 Nasıl oynanır menüsünden kontrolleri öğrenebilirsiniz.');
-console.log('🔥 50 bölüm, 10 boss, 6 karakter, save sistemi!');
+console.log('🔥 50 bölüm, 10 boss, 6 karakter, mağaza, mini-map, isim sistemi!');
 console.log('💪 İyi eğlenceler!');
