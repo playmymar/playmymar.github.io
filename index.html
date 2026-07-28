@@ -153,15 +153,15 @@
                     <h3>📱 Mobil Kontroller</h3>
                     <div class="control-item">
                         <span class="key">👈 Sol</span>
-                        <span>Sola Hareket (Ekran Sol)</span>
+                        <span>Sola Hareket (Ekran Sol Alt)</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="key">👆 Orta</span>
+                        <span>Zıplamak (Ekran Orta Alt - GÖRÜNMEZ)</span>
                     </div>
                     <div class="control-item">
                         <span class="key">👉 Sağ</span>
-                        <span>Sağa Hareket (Ekran Sağ)</span>
-                    </div>
-                    <div class="control-item">
-                        <span class="key">⬇️ Zıpla</span>
-                        <span>Zıplamak (Ekran Alt - ORTA)</span>
+                        <span>Sağa Hareket (Ekran Sağ Alt)</span>
                     </div>
                 </div>
                 <div class="game-rules">
@@ -232,11 +232,11 @@
             </div>
         </div>
 
-        <!-- Mobil Kontroller -->
+        <!-- ========== MOBİL KONTROLLER - GÖRÜNMEZ ========== -->
         <div id="mobileControls" class="mobile-controls">
-            <button id="mobileLeft" class="mobile-btn">◀</button>
-            <button id="mobileJump" class="mobile-btn jump-btn">⬆ Zıpla</button>
-            <button id="mobileRight" class="mobile-btn">▶</button>
+            <div id="mobileLeft" class="mobile-zone left-zone"></div>
+            <div id="mobileJump" class="mobile-zone jump-zone"></div>
+            <div id="mobileRight" class="mobile-zone right-zone"></div>
         </div>
 
         <!-- Duraklatma Menüsü -->
@@ -282,4 +282,4 @@
 
     <script src="script.js"></script>
 </body>
-                    </html>
+                                                                                    </html>
