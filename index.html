@@ -7,39 +7,48 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- ========== ANA MENÜ ========== -->
+    <!-- ============================================================ -->
+    <!-- ANA MENÜ -->
+    <!-- ============================================================ -->
     <div id="mainMenu" class="menu-container active">
         <div class="menu-content">
             <div class="logo-container">
                 <h1 class="game-title">⚔️ MYMAR</h1>
                 <div class="title-decoration"></div>
                 <p class="game-subtitle">Epik Macera Başlıyor!</p>
+                <p class="game-version">v3.0 - 50 Bölüm</p>
             </div>
             <div class="menu-buttons">
                 <button id="startGameBtn" class="menu-btn primary">🎮 Oyunu Başlat</button>
+                <button id="continueGameBtn" class="menu-btn">💾 Kayıttan Devam Et</button>
                 <button id="characterSelectBtn" class="menu-btn">👤 Karakter Seç</button>
                 <button id="settingsBtn" class="menu-btn">⚙️ Ayarlar</button>
                 <button id="howToPlayBtn" class="menu-btn">📖 Nasıl Oynanır</button>
                 <button id="leaderboardBtn" class="menu-btn">🏆 Skor Tablosu</button>
             </div>
             <div class="menu-footer">
-                <span>v2.0</span>
+                <span>v3.0</span>
                 <span>|</span>
-                <span>🎯 10 Bölüm</span>
+                <span>🎯 50 Bölüm</span>
+                <span>|</span>
+                <span>👾 10 Boss</span>
             </div>
         </div>
     </div>
 
-    <!-- ========== KARAKTER SEÇİM ========== -->
+    <!-- ============================================================ -->
+    <!-- KARAKTER SEÇİM -->
+    <!-- ============================================================ -->
     <div id="characterSelectMenu" class="menu-container">
         <div class="menu-content">
             <h2 class="menu-title">👤 Karakter Seç</h2>
             <div class="character-grid">
-                <div class="character-card" data-character="warrior">
+                <div class="character-card selected" data-character="warrior">
                     <div class="character-preview warrior-preview">⚔️</div>
                     <h3>Savaşçı</h3>
                     <p>Hız: ⭐⭐⭐</p>
                     <p>Güç: ⭐⭐⭐⭐⭐</p>
+                    <p>Can: ⭐⭐⭐⭐⭐</p>
                     <button class="select-char-btn" data-char="warrior">Seç</button>
                 </div>
                 <div class="character-card" data-character="mage">
@@ -47,6 +56,7 @@
                     <h3>Büyücü</h3>
                     <p>Hız: ⭐⭐⭐⭐</p>
                     <p>Güç: ⭐⭐⭐</p>
+                    <p>Can: ⭐⭐⭐</p>
                     <button class="select-char-btn" data-char="mage">Seç</button>
                 </div>
                 <div class="character-card" data-character="rogue">
@@ -54,6 +64,7 @@
                     <h3>Haydut</h3>
                     <p>Hız: ⭐⭐⭐⭐⭐</p>
                     <p>Güç: ⭐⭐</p>
+                    <p>Can: ⭐⭐⭐</p>
                     <button class="select-char-btn" data-char="rogue">Seç</button>
                 </div>
                 <div class="character-card" data-character="archer">
@@ -61,14 +72,33 @@
                     <h3>Okçu</h3>
                     <p>Hız: ⭐⭐⭐</p>
                     <p>Güç: ⭐⭐⭐⭐</p>
+                    <p>Can: ⭐⭐⭐⭐</p>
                     <button class="select-char-btn" data-char="archer">Seç</button>
+                </div>
+                <div class="character-card" data-character="knight">
+                    <div class="character-preview knight-preview">🛡️</div>
+                    <h3>Şövalye</h3>
+                    <p>Hız: ⭐⭐</p>
+                    <p>Güç: ⭐⭐⭐⭐⭐</p>
+                    <p>Can: ⭐⭐⭐⭐⭐</p>
+                    <button class="select-char-btn" data-char="knight">Seç</button>
+                </div>
+                <div class="character-card" data-character="ninja">
+                    <div class="character-preview ninja-preview">🥷</div>
+                    <h3>Ninja</h3>
+                    <p>Hız: ⭐⭐⭐⭐⭐</p>
+                    <p>Güç: ⭐⭐⭐</p>
+                    <p>Can: ⭐⭐</p>
+                    <button class="select-char-btn" data-char="ninja">Seç</button>
                 </div>
             </div>
             <button id="charSelectBackBtn" class="menu-btn secondary">⬅️ Geri Dön</button>
         </div>
     </div>
 
-    <!-- ========== AYARLAR MENÜSÜ ========== -->
+    <!-- ============================================================ -->
+    <!-- AYARLAR MENÜSÜ -->
+    <!-- ============================================================ -->
     <div id="settingsMenu" class="menu-container">
         <div class="menu-content">
             <h2 class="menu-title">⚙️ Ayarlar</h2>
@@ -95,6 +125,7 @@
                         <option value="hard">🔴 Zor</option>
                         <option value="nightmare">💀 Kabus</option>
                     </select>
+                    <span class="difficulty-desc" id="difficultyDesc">Dengeli oyun deneyimi</span>
                 </div>
                 <div class="setting-item">
                     <label>🎨 Arka Plan</label>
@@ -105,6 +136,8 @@
                         <option value="snow">❄️ Kar</option>
                         <option value="volcano">🌋 Volkan</option>
                         <option value="space">🚀 Uzay</option>
+                        <option value="underwater">🌊 Sualtı</option>
+                        <option value="cyber">💠 Siber</option>
                     </select>
                 </div>
                 <div class="setting-item">
@@ -116,12 +149,21 @@
                     <input type="range" id="speedSlider" min="1" max="5" value="3">
                     <span id="speedValue">3</span>
                 </div>
+                <div class="setting-item">
+                    <label>💾 Otomatik Kayıt</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="autoSaveToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
             </div>
             <button id="settingsBackBtn" class="menu-btn secondary">⬅️ Geri Dön</button>
         </div>
     </div>
 
-    <!-- ========== NASIL OYNANIR ========== -->
+    <!-- ============================================================ -->
+    <!-- NASIL OYNANIR -->
+    <!-- ============================================================ -->
     <div id="howToPlayMenu" class="menu-container">
         <div class="menu-content">
             <h2 class="menu-title">📖 Nasıl Oynanır</h2>
@@ -142,7 +184,11 @@
                     </div>
                     <div class="control-item">
                         <span class="key">Space</span>
-                        <span>Etkileşim / Toplama</span>
+                        <span>Dash / Etkileşim</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="key">S / ↓</span>
+                        <span>Aşağı / Platformdan İn</span>
                     </div>
                     <div class="control-item">
                         <span class="key">ESC</span>
@@ -168,10 +214,22 @@
                     <h3>📜 Oyun Kuralları</h3>
                     <ul>
                         <li>✨ Tüm altınları topla ve hedefe ulaş</li>
-                        <li>🧱 Engellerden kaçın</li>
-                        <li>🔥 Her bölümde yeni zorluklar seni bekliyor</li>
+                        <li>🧱 Engellerden ve düşmanlardan kaçın</li>
+                        <li>🔥 Her 10 bölümde bir Boss savaşı</li>
                         <li>🏆 En yüksek puanı elde etmeye çalış</li>
                         <li>💎 Bonus eşyalar ekstra puan kazandırır</li>
+                        <li>🛡️ Power-uplar toplayarak güçlen</li>
+                        <li>💾 Oyun otomatik kaydedilir</li>
+                    </ul>
+                </div>
+                <div class="game-tips">
+                    <h3>💡 İpuçları</h3>
+                    <ul>
+                        <li>🔹 Düşmanların üzerine zıplayarak onları yenebilirsin</li>
+                        <li>🔹 Dash (Space) ile havada hızlıca kaçabilirsin</li>
+                        <li>🔹 Altınları toplarken Combo puanı kazanırsın</li>
+                        <li>🔹 Her bölümde gizli mücevherler bulunur</li>
+                        <li>🔹 Boss savaşlarında desenleri öğren ve saldır</li>
                     </ul>
                 </div>
             </div>
@@ -179,24 +237,33 @@
         </div>
     </div>
 
-    <!-- ========== SKOR TABLOSU ========== -->
+    <!-- ============================================================ -->
+    <!-- SKOR TABLOSU -->
+    <!-- ============================================================ -->
     <div id="leaderboardMenu" class="menu-container">
         <div class="menu-content">
             <h2 class="menu-title">🏆 Skor Tablosu</h2>
             <div class="leaderboard-content">
                 <div id="leaderboardList">
-                    <div class="lb-item"><span>1.</span> <span>🎮 Oyuncu1</span> <span>⭐ 2500</span></div>
-                    <div class="lb-item"><span>2.</span> <span>🎮 Oyuncu2</span> <span>⭐ 2100</span></div>
-                    <div class="lb-item"><span>3.</span> <span>🎮 Oyuncu3</span> <span>⭐ 1800</span></div>
-                    <div class="lb-item"><span>4.</span> <span>🎮 Oyuncu4</span> <span>⭐ 1500</span></div>
-                    <div class="lb-item"><span>5.</span> <span>🎮 Oyuncu5</span> <span>⭐ 1200</span></div>
+                    <div class="lb-item gold"><span>👑 1.</span> <span>🎮 Şampiyon</span> <span>⭐ 25000</span></div>
+                    <div class="lb-item silver"><span>🥈 2.</span> <span>🎮 Savaşçı</span> <span>⭐ 21000</span></div>
+                    <div class="lb-item bronze"><span>🥉 3.</span> <span>🎮 Büyücü</span> <span>⭐ 18000</span></div>
+                    <div class="lb-item"><span>4.</span> <span>🎮 Okçu</span> <span>⭐ 15000</span></div>
+                    <div class="lb-item"><span>5.</span> <span>🎮 Haydut</span> <span>⭐ 12000</span></div>
+                    <div class="lb-item"><span>6.</span> <span>🎮 Şövalye</span> <span>⭐ 9000</span></div>
+                    <div class="lb-item"><span>7.</span> <span>🎮 Ninja</span> <span>⭐ 7000</span></div>
+                    <div class="lb-item"><span>8.</span> <span>🎮 Maceracı</span> <span>⭐ 5000</span></div>
+                    <div class="lb-item"><span>9.</span> <span>🎮 Kaşif</span> <span>⭐ 3000</span></div>
+                    <div class="lb-item"><span>10.</span> <span>🎮 Yolcu</span> <span>⭐ 1000</span></div>
                 </div>
             </div>
             <button id="leaderboardBackBtn" class="menu-btn secondary">⬅️ Geri Dön</button>
         </div>
     </div>
 
-    <!-- ========== OYUN EKRANI ========== -->
+    <!-- ============================================================ -->
+    <!-- OYUN EKRANI -->
+    <!-- ============================================================ -->
     <div id="gameScreen" class="game-container">
         <canvas id="gameCanvas"></canvas>
         
@@ -215,6 +282,10 @@
                     <span class="hud-icon">💎</span>
                     <span id="gemDisplay">0</span>
                 </div>
+                <div class="hud-item">
+                    <span class="hud-icon">🔥</span>
+                    <span id="comboDisplay">0</span>
+                </div>
             </div>
             <div class="hud-center">
                 <div class="hud-item">
@@ -226,13 +297,28 @@
                 <div class="hud-item">
                     <span id="timerDisplay">⏱️ 00:00</span>
                 </div>
+                <div class="hud-item" id="bossIndicator" style="display:none;">
+                    <span class="hud-icon">👾</span>
+                    <span>BOSS!</span>
+                </div>
             </div>
             <div class="hud-right">
                 <button id="pauseBtn" class="hud-btn">⏸️</button>
             </div>
         </div>
 
-        <!-- ========== MOBİL KONTROLLER - GÖRÜNMEZ ========== -->
+        <!-- Boss Can Çubuğu -->
+        <div id="bossHealthBar" class="boss-health-container" style="display:none;">
+            <div class="boss-health-label">👾 BOSS</div>
+            <div class="boss-health-track">
+                <div id="bossHealthFill" class="boss-health-fill" style="width:100%"></div>
+            </div>
+            <div class="boss-health-label" id="bossHealthText">100%</div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- MOBİL KONTROLLER - GÖRÜNMEZ -->
+        <!-- ============================================================ -->
         <div id="mobileControls" class="mobile-controls">
             <div id="mobileLeft" class="mobile-zone left-zone"></div>
             <div id="mobileJump" class="mobile-zone jump-zone"></div>
@@ -257,11 +343,26 @@
                     <p>⭐ Puan: <span id="finalScore">0</span></p>
                     <p>💰 Altın: <span id="finalGold">0</span></p>
                     <p>💎 Mücevher: <span id="finalGems">0</span></p>
+                    <p>🔥 Max Combo: <span id="finalCombo">0</span></p>
                     <p>⏱️ Süre: <span id="finalTime">0</span>s</p>
                     <p>🎯 Bölüm: <span id="finalLevel">1</span></p>
                 </div>
                 <button id="nextLevelBtn" class="menu-btn primary">▶️ Sonraki Bölüm</button>
                 <button id="levelCompleteMenuBtn" class="menu-btn secondary">🏠 Ana Menü</button>
+            </div>
+        </div>
+
+        <!-- Boss Savaşı - Kazanma -->
+        <div id="bossDefeated" class="boss-defeated-overlay" style="display:none;">
+            <div class="boss-defeated-content">
+                <h2>👾 BOSS YENİLDİ!</h2>
+                <div class="level-stats">
+                    <p>⭐ Puan: <span id="bossScore">0</span></p>
+                    <p>💰 Altın: <span id="bossGold">0</span></p>
+                    <p>💎 Mücevher: <span id="bossGems">0</span></p>
+                </div>
+                <button id="bossNextBtn" class="menu-btn primary">▶️ Sonraki Bölüm</button>
+                <button id="bossMenuBtn" class="menu-btn secondary">🏠 Ana Menü</button>
             </div>
         </div>
 
@@ -282,4 +383,4 @@
 
     <script src="script.js"></script>
 </body>
-                                                                                    </html>
+                            </html>
