@@ -57,11 +57,9 @@ body {
 .menu-content::-webkit-scrollbar {
     width: 4px;
 }
-
 .menu-content::-webkit-scrollbar-track {
     background: transparent;
 }
-
 .menu-content::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
@@ -347,7 +345,6 @@ body {
 .how-to-play-content::-webkit-scrollbar {
     width: 4px;
 }
-
 .how-to-play-content::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
@@ -424,7 +421,6 @@ body {
 .leaderboard-content::-webkit-scrollbar {
     width: 4px;
 }
-
 .leaderboard-content::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
@@ -544,57 +540,41 @@ body {
     transform: scale(0.95);
 }
 
-/* ========== MOBİL KONTROLLER ========== */
+/* ========== MOBİL KONTROLLER - GÖRÜNMEZ ========== */
 .mobile-controls {
     position: fixed;
-    bottom: 20px;
+    bottom: 0;
     left: 0;
     right: 0;
+    height: 50%;
     display: none;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
     z-index: 50;
     pointer-events: none;
 }
 
-.mobile-btn {
+.mobile-zone {
+    position: absolute;
+    bottom: 0;
+    height: 100%;
     pointer-events: auto;
-    width: 65px;
-    height: 65px;
-    border: none;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    color: #ffffff;
-    font-size: 24px;
-    font-weight: 700;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    cursor: pointer;
-    transition: all 0.15s ease;
     touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
+    cursor: pointer;
 }
 
-.mobile-btn:active {
-    transform: scale(0.85);
-    background: rgba(255, 255, 255, 0.3);
+/* GÖRÜNMEZ - SADECE TIKLANABİLİR ALANLAR */
+.left-zone {
+    left: 0;
+    width: 33.33%;
 }
 
-.mobile-btn.jump-btn {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-    border-color: transparent;
-    font-size: 18px;
-    box-shadow: 0 5px 30px rgba(238, 90, 36, 0.4);
+.jump-zone {
+    left: 33.33%;
+    width: 33.34%;
 }
 
-.mobile-btn.jump-btn:active {
-    transform: scale(0.8);
-    box-shadow: 0 2px 15px rgba(238, 90, 36, 0.6);
+.right-zone {
+    right: 0;
+    width: 33.33%;
 }
 
 /* ========== OVERLAY'LER ========== */
@@ -675,7 +655,7 @@ body {
 
 /* ========== RESPONSIVE ========== */
 
-/* Tablet ve Telefon */
+/* Tablet ve Telefon - Mobil kontrolleri göster */
 @media (max-width: 768px) {
     .menu-content {
         padding: 30px 25px;
@@ -714,7 +694,6 @@ body {
     .hud-center .hud-item {
         display: none;
     }
-    
     .hud-center .hud-item:first-child {
         display: flex;
     }
@@ -730,7 +709,7 @@ body {
     
     /* Mobil kontroller göster */
     .mobile-controls {
-        display: flex;
+        display: block !important;
     }
 }
 
@@ -809,23 +788,6 @@ body {
         font-size: 13px;
     }
     
-    .mobile-btn {
-        width: 55px;
-        height: 55px;
-        font-size: 20px;
-    }
-    
-    .mobile-btn.jump-btn {
-        width: 68px;
-        height: 68px;
-        font-size: 15px;
-    }
-    
-    .mobile-controls {
-        padding: 0 12px;
-        bottom: 12px;
-    }
-    
     .setting-item {
         padding: 8px 0;
         font-size: 13px;
@@ -846,7 +808,7 @@ body {
 /* Dokunmatik cihazlar için mobil kontrolleri göster */
 @media (hover: none) and (pointer: coarse) {
     .mobile-controls {
-        display: flex !important;
+        display: block !important;
     }
 }
 
